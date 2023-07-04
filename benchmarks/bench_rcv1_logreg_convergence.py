@@ -69,7 +69,7 @@ def bench_one(name, clf_type, clf_params, n_iter):
 def bench(clfs):
     for (name, clf, iter_range, train_losses, train_scores,
          test_scores, durations) in clfs:
-        print("training %s" % name)
+        print(f"training {name}")
         clf_type = type(clf)
         clf_params = clf.get_params()
 
@@ -83,7 +83,7 @@ def bench(clfs):
             train_scores.append(train_score)
             test_scores.append(test_score)
             durations.append(duration)
-            print("classifier: %s" % name)
+            print(f"classifier: {name}")
             print("train_loss: %.8f" % train_loss)
             print("train_score: %.8f" % train_score)
             print("test_score: %.8f" % test_score)
@@ -125,10 +125,9 @@ def plot_test_scores(clfs):
 
 def plot_dloss(clfs):
     plt.figure()
-    pobj_final = []
-    for (name, _, _, train_losses, _, _, durations) in clfs:
-        pobj_final.append(train_losses[-1])
-
+    pobj_final = [
+        train_losses[-1] for name, _, _, train_losses, _, _, durations in clfs
+    ]
     indices = np.argsort(pobj_final)
     pobj_best = pobj_final[indices[0]]
 

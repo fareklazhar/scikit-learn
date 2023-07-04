@@ -20,6 +20,7 @@ The second figure shows the log-marginal-likelihood for different choices of
 the kernel's hyperparameters, highlighting the two choices of the
 hyperparameters used in the first figure by black dots.
 """
+
 print(__doc__)
 
 # Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
@@ -67,10 +68,18 @@ plt.figure(0)
 plt.scatter(X[:train_size, 0], y[:train_size], c='k', label="Train data")
 plt.scatter(X[train_size:, 0], y[train_size:], c='g', label="Test data")
 X_ = np.linspace(0, 5, 100)
-plt.plot(X_, gp_fix.predict_proba(X_[:, np.newaxis])[:, 1], 'r',
-         label="Initial kernel: %s" % gp_fix.kernel_)
-plt.plot(X_, gp_opt.predict_proba(X_[:, np.newaxis])[:, 1], 'b',
-         label="Optimized kernel: %s" % gp_opt.kernel_)
+plt.plot(
+    X_,
+    gp_fix.predict_proba(X_[:, np.newaxis])[:, 1],
+    'r',
+    label=f"Initial kernel: {gp_fix.kernel_}",
+)
+plt.plot(
+    X_,
+    gp_opt.predict_proba(X_[:, np.newaxis])[:, 1],
+    'b',
+    label=f"Optimized kernel: {gp_opt.kernel_}",
+)
 plt.xlabel("Feature")
 plt.ylabel("Class 1 probability")
 plt.xlim(0, 5)

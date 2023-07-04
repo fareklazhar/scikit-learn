@@ -85,10 +85,7 @@ def plot_calibration_curve(est, name, fig_index):
     ax2 = plt.subplot2grid((3, 1), (2, 0))
 
     ax1.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
-    for clf, name in [(lr, 'Logistic'),
-                      (est, name),
-                      (isotonic, name + ' + Isotonic'),
-                      (sigmoid, name + ' + Sigmoid')]:
+    for clf, name in [(lr, 'Logistic'), (est, name), (isotonic, f'{name} + Isotonic'), (sigmoid, f'{name} + Sigmoid')]:
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         if hasattr(clf, "predict_proba"):
@@ -99,7 +96,7 @@ def plot_calibration_curve(est, name, fig_index):
                 (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
 
         clf_score = brier_score_loss(y_test, prob_pos, pos_label=y.max())
-        print("%s:" % name)
+        print(f"{name}:")
         print("\tBrier: %1.3f" % (clf_score))
         print("\tPrecision: %1.3f" % precision_score(y_test, y_pred))
         print("\tRecall: %1.3f" % recall_score(y_test, y_pred))

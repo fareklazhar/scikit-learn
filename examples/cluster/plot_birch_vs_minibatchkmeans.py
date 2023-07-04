@@ -13,6 +13,7 @@ step before the final (global) clustering step that further reduces these
 158 clusters to 100 clusters.
 """
 
+
 # Authors: Manoj Kumar <manojkumarsivaraj334@gmail.com
 #          Alexandre Gramfort <alexandre.gramfort@telecom-paristech.fr>
 # License: BSD 3 clause
@@ -39,7 +40,7 @@ n_centres = np.hstack((np.ravel(xx)[:, np.newaxis],
 
 # Generate blobs to do a comparison between MiniBatchKMeans and Birch.
 X, y = make_blobs(n_samples=100000, centers=n_centres, random_state=0)
-   
+
 
 # Use all colors that matplotlib provides by default.
 colors_ = cycle(colors.cnames.keys())
@@ -77,7 +78,7 @@ for ind, (birch_model, info) in enumerate(zip(birch_models, final_step)):
     ax.set_ylim([-25, 25])
     ax.set_xlim([-25, 25])
     ax.set_autoscaley_on(False)
-    ax.set_title('Birch %s' % info)
+    ax.set_title(f'Birch {info}')
 
 # Compute clustering with MiniBatchKMeans.
 mbk = MiniBatchKMeans(init='k-means++', n_clusters=100, batch_size=100,

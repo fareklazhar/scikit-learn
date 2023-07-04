@@ -100,7 +100,7 @@ def dbscan(X, eps=0.5, min_samples=5, metric='minkowski',
     In: Proceedings of the 2nd International Conference on Knowledge Discovery
     and Data Mining, Portland, OR, AAAI Press, pp. 226-231. 1996
     """
-    if not eps > 0.0:
+    if eps <= 0.0:
         raise ValueError("eps must be positive.")
 
     X = check_array(X, accept_sparse='csr')

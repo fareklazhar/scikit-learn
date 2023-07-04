@@ -8,6 +8,7 @@ Brendan J. Frey and Delbert Dueck, "Clustering by Passing Messages
 Between Data Points", Science Feb. 2007
 
 """
+
 print(__doc__)
 
 from sklearn.cluster import AffinityPropagation
@@ -52,7 +53,7 @@ colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
 for k, col in zip(range(n_clusters_), colors):
     class_members = labels == k
     cluster_center = X[cluster_centers_indices[k]]
-    plt.plot(X[class_members, 0], X[class_members, 1], col + '.')
+    plt.plot(X[class_members, 0], X[class_members, 1], f'{col}.')
     plt.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col,
              markeredgecolor='k', markersize=14)
     for x in X[class_members]:

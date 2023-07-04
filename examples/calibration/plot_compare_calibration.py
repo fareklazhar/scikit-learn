@@ -47,6 +47,7 @@ with different biases per method:
     .. [1] Predicting Good Probabilities with Supervised Learning,
           A. Niculescu-Mizil & R. Caruana, ICML 2005
 """
+
 print(__doc__)
 
 # Author: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
@@ -103,8 +104,7 @@ for clf, name in [(lr, 'Logistic'),
     fraction_of_positives, mean_predicted_value = \
         calibration_curve(y_test, prob_pos, n_bins=10)
 
-    ax1.plot(mean_predicted_value, fraction_of_positives, "s-",
-             label="%s" % (name, ))
+    ax1.plot(mean_predicted_value, fraction_of_positives, "s-", label=f"{name}")
 
     ax2.hist(prob_pos, range=(0, 1), bins=10, label=name,
              histtype="step", lw=2)

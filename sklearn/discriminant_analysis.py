@@ -61,7 +61,7 @@ def _cov(X, shrinkage=None):
             s = empirical_covariance(X)
         else:
             raise ValueError('unknown shrinkage parameter')
-    elif isinstance(shrinkage, float) or isinstance(shrinkage, int):
+    elif isinstance(shrinkage, (float, int)):
         if shrinkage < 0 or shrinkage > 1:
             raise ValueError('shrinkage parameter must be between 0 and 1')
         s = shrunk_covariance(empirical_covariance(X), shrinkage)
@@ -463,8 +463,9 @@ class LinearDiscriminantAnalysis(BaseEstimator, LinearClassifierMixin,
         elif self.solver == 'eigen':
             self._solve_eigen(X, y, shrinkage=self.shrinkage)
         else:
-            raise ValueError("unknown solver {} (valid solvers are 'svd', "
-                             "'lsqr', and 'eigen').".format(self.solver))
+            raise ValueError(
+                f"unknown solver {self.solver} (valid solvers are 'svd', 'lsqr', and 'eigen')."
+            )
         if self.classes_.size == 2:  # treat binary case as a special case
             self.coef_ = np.array(self.coef_[1, :] - self.coef_[0, :], ndmin=2)
             self.intercept_ = np.array(self.intercept_[1] - self.intercept_[0],
@@ -516,12 +517,11 @@ class LinearDiscriminantAnalysis(BaseEstimator, LinearClassifierMixin,
         np.exp(prob, prob)
         prob += 1
         np.reciprocal(prob, prob)
-        if len(self.classes_) == 2:  # binary case
+        if len(self.classes_) == 2:
             return np.column_stack([1 - prob, prob])
-        else:
-            # OvR normalization, like LibLinear's predict_probability
-            prob /= prob.sum(axis=1).reshape((prob.shape[0], -1))
-            return prob
+        # OvR normalization, like LibLinear's predict_probability
+        prob /= prob.sum(axis=1).reshape((prob.shape[0], -1))
+        return prob
 
     def predict_log_proba(self, X):
         """Estimate log probability.
@@ -668,9 +668,7 @@ class QuadraticDiscriminantAnalysis(BaseEstimator, ClassifierMixin):
         else:
             self.priors_ = self.priors
 
-        cov = None
-        if self.store_covariances:
-            cov = []
+        cov = [] if self.store_covariances else None
         means = []
         scalings = []
         rotations = []
@@ -679,8 +677,9 @@ class QuadraticDiscriminantAnalysis(BaseEstimator, ClassifierMixin):
             meang = Xg.mean(0)
             means.append(meang)
             if len(Xg) == 1:
-                raise ValueError('y has only 1 sample in class %s, covariance '
-                                 'is ill defined.' % str(self.classes_[ind]))
+                raise ValueError(
+                    f'y has only 1 sample in class {str(self.classes_[ind])}, covariance is ill defined.'
+                )
             Xgc = Xg - meang
             # Xgc = U * S * V.T
             U, S, Vt = np.linalg.svd(Xgc, full_matrices=False)
@@ -733,9 +732,7 @@ class QuadraticDiscriminantAnalysis(BaseEstimator, ClassifierMixin):
         """
         dec_func = self._decision_function(X)
         # handle special case of two classes
-        if len(self.classes_) == 2:
-            return dec_func[:, 1] - dec_func[:, 0]
-        return dec_func
+        return dec_func[:, 1] - dec_func[:, 0] if len(self.classes_) == 2 else dec_func
 
     def predict(self, X):
         """Perform classification on an array of test vectors X.
@@ -751,8 +748,7 @@ class QuadraticDiscriminantAnalysis(BaseEstimator, ClassifierMixin):
         C : array, shape = [n_samples]
         """
         d = self._decision_function(X)
-        y_pred = self.classes_.take(d.argmax(1))
-        return y_pred
+        return self.classes_.take(d.argmax(1))
 
     def predict_proba(self, X):
         """Return posterior probabilities of classification.

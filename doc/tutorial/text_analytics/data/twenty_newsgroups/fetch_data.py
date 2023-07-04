@@ -1,5 +1,6 @@
 """Script to download the 20 newsgroups text classification set"""
 
+
 import os
 import tarfile
 
@@ -19,11 +20,11 @@ TEST_FOLDER = "20news-bydate-test"
 if not os.path.exists(TRAIN_FOLDER) or not os.path.exists(TEST_FOLDER):
 
     if not os.path.exists(ARCHIVE_NAME):
-        print("Downloading dataset from %s (14 MB)" % URL)
+        print(f"Downloading dataset from {URL} (14 MB)")
         opener = urlopen(URL)
         open(ARCHIVE_NAME, 'wb').write(opener.read())
 
-    print("Decompressing %s" % ARCHIVE_NAME)
+    print(f"Decompressing {ARCHIVE_NAME}")
     tarfile.open(ARCHIVE_NAME, "r:gz").extractall(path='.')
     os.remove(ARCHIVE_NAME)
 

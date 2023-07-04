@@ -95,15 +95,13 @@ rules = {
 # Hash db
 #
 def load_hashes(filename):
+    hashes = {}
     # Return { filename : (sha1 of input, sha1 of output) }
     if os.path.isfile(filename):
-        hashes = {}
         with open(filename, 'r') as f:
             for line in f:
                 filename, inhash, outhash = line.split()
                 hashes[filename] = (inhash, outhash)
-    else:
-        hashes = {}
     return hashes
 
 
@@ -141,10 +139,10 @@ def process(path, fromfile, tofile, processor_function, hash_db):
     fulltopath = os.path.join(path, tofile)
     current_hash = get_hash(fullfrompath, fulltopath)
     if current_hash == hash_db.get(normpath(fullfrompath)):
-        print('%s has not changed' % fullfrompath)
+        print(f'{fullfrompath} has not changed')
         return
 
-    print('Processing %s' % fullfrompath)
+    print(f'Processing {fullfrompath}')
     processor_function(fullfrompath, fulltopath)
     # changed target file, recompute hash
     current_hash = get_hash(fullfrompath, fulltopath)

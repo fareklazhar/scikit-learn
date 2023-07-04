@@ -15,6 +15,7 @@ Similarly, decreasing alpha may fix high bias (a sign of underfitting) by
 encouraging larger weights, potentially resulting in a more complicated
 decision boundary.
 """
+
 print(__doc__)
 
 
@@ -34,7 +35,7 @@ h = .02  # step size in the mesh
 alphas = np.logspace(-5, 3, 5)
 names = []
 for i in alphas:
-    names.append('alpha ' + str(i))
+    names.append(f'alpha {str(i)}')
 
 classifiers = []
 for i in alphas:

@@ -16,6 +16,7 @@ The next plot displays what using eight clusters would deliver
 and finally the ground truth.
 
 """
+
 print(__doc__)
 
 
@@ -45,7 +46,7 @@ estimators = {'k_means_iris_3': KMeans(n_clusters=3),
 
 
 fignum = 1
-for name, est in estimators.items():
+for est in estimators.values():
     fig = plt.figure(fignum, figsize=(4, 3))
     plt.clf()
     ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)

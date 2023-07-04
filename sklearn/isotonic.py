@@ -133,19 +133,16 @@ def isotonic_regression(y, sample_weight=None, y_min=None, y_max=None,
         sample_weight = np.copy(sample_weight)
         # upper bound on the cost function
         C = np.dot(sample_weight, y * y) * 10
-        if y_min is not None:
-            y[0] = y_min
-            sample_weight[0] = C
-        if y_max is not None:
-            y[-1] = y_max
-            sample_weight[-1] = C
+    if y_min is not None:
+        y[0] = y_min
+        sample_weight[0] = C
+    if y_max is not None:
+        y[-1] = y_max
+        sample_weight[-1] = C
 
     solution = np.empty(len(y))
     y_ = _isotonic_regression(y, sample_weight, solution)
-    if increasing:
-        return y_
-    else:
-        return y_[::-1]
+    return y_ if increasing else y_[::-1]
 
 
 class IsotonicRegression(BaseEstimator, TransformerMixin, RegressorMixin):
@@ -247,11 +244,11 @@ class IsotonicRegression(BaseEstimator, TransformerMixin, RegressorMixin):
                              "'nan', 'clip', 'raise'; got {0}"
                              .format(self.out_of_bounds))
 
-        bounds_error = self.out_of_bounds == "raise"
         if len(y) == 1:
             # single y, constant prediction
             self.f_ = lambda x: y.repeat(x.shape)
         else:
+            bounds_error = self.out_of_bounds == "raise"
             self.f_ = interpolate.interp1d(X, y, kind='slinear',
                                            bounds_error=bounds_error)
 

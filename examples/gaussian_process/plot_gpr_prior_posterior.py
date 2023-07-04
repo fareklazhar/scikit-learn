@@ -7,6 +7,7 @@ This example illustrates the prior and posterior of a GPR with different
 kernels. Mean, standard deviation, and 10 samples are shown for both prior
 and posterior.
 """
+
 print(__doc__)
 
 # Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
@@ -49,7 +50,7 @@ for fig_index, kernel in enumerate(kernels):
     plt.plot(X_, y_samples, lw=1)
     plt.xlim(0, 5)
     plt.ylim(-3, 3)
-    plt.title("Prior (kernel:  %s)" % kernel, fontsize=12)
+    plt.title(f"Prior (kernel:  {kernel})", fontsize=12)
 
     # Generate data and fit GP
     rng = np.random.RandomState(4)

@@ -20,6 +20,7 @@ create many clusters. Thus in this example its two parameters
 (damping and per-point preference) were set to to mitigate this
 behavior.
 """
+
 print(__doc__)
 
 import time
@@ -42,7 +43,7 @@ noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05)
 blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
 no_structure = np.random.rand(n_samples, 2), None
 
-colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
+colors = np.array(list('bgrcmykbgrcmykbgrcmykbgrcmyk'))
 colors = np.hstack([colors] * 20)
 
 clustering_names = [

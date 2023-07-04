@@ -130,9 +130,7 @@ def learning_curve(estimator, X, y, train_sizes=np.linspace(0.1, 1.0, 5),
 
     # HACK as long as boolean indices are allowed in cv generators
     if cv[0][0].dtype == bool:
-        new_cv = []
-        for i in range(len(cv)):
-            new_cv.append((np.nonzero(cv[i][0])[0], np.nonzero(cv[i][1])[0]))
+        new_cv = [(np.nonzero(item[0])[0], np.nonzero(item[1])[0]) for item in cv]
         cv = new_cv
 
     n_max_training_samples = len(cv[0][0])
@@ -143,7 +141,7 @@ def learning_curve(estimator, X, y, train_sizes=np.linspace(0.1, 1.0, 5),
                                              n_max_training_samples)
     n_unique_ticks = train_sizes_abs.shape[0]
     if verbose > 0:
-        print("[learning_curve] Training set sizes: " + str(train_sizes_abs))
+        print(f"[learning_curve] Training set sizes: {str(train_sizes_abs)}")
 
     parallel = Parallel(n_jobs=n_jobs, pre_dispatch=pre_dispatch,
                         verbose=verbose)
@@ -205,15 +203,14 @@ def _translate_train_sizes(train_sizes, n_max_training_samples):
                                  dtype=np.int, copy=False)
         train_sizes_abs = np.clip(train_sizes_abs, 1,
                                   n_max_training_samples)
-    else:
-        if (n_min_required_samples <= 0 or
+    elif (n_min_required_samples <= 0 or
                 n_max_required_samples > n_max_training_samples):
-            raise ValueError("train_sizes has been interpreted as absolute "
-                             "numbers of training samples and must be within "
-                             "(0, %d], but is within [%d, %d]."
-                             % (n_max_training_samples,
-                                n_min_required_samples,
-                                n_max_required_samples))
+        raise ValueError("train_sizes has been interpreted as absolute "
+                         "numbers of training samples and must be within "
+                         "(0, %d], but is within [%d, %d]."
+                         % (n_max_training_samples,
+                            n_min_required_samples,
+                            n_max_required_samples))
 
     train_sizes_abs = np.unique(train_sizes_abs)
     if n_ticks > train_sizes_abs.shape[0]:

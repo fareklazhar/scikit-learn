@@ -1,5 +1,6 @@
 """Script to download the movie review dataset"""
 
+
 import os
 import tarfile
 try:
@@ -18,10 +19,10 @@ DATA_FOLDER = "txt_sentoken"
 if not os.path.exists(DATA_FOLDER):
 
     if not os.path.exists(ARCHIVE_NAME):
-        print("Downloading dataset from %s (3 MB)" % URL)
+        print(f"Downloading dataset from {URL} (3 MB)")
         opener = urlopen(URL)
         open(ARCHIVE_NAME, 'wb').write(opener.read())
 
-    print("Decompressing %s" % ARCHIVE_NAME)
+    print(f"Decompressing {ARCHIVE_NAME}")
     tarfile.open(ARCHIVE_NAME, "r:gz").extractall(path='.')
     os.remove(ARCHIVE_NAME)

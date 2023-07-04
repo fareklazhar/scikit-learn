@@ -16,6 +16,7 @@ The bar plot indicates the accuracy, training time (normalized) and test time
 
 """
 
+
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Olivier Grisel <olivier.grisel@ensta.org>
 #         Mathieu Blondel <mathieu@mblondel.org>
@@ -105,11 +106,7 @@ else:
         'sci.space',
     ]
 
-if opts.filtered:
-    remove = ('headers', 'footers', 'quotes')
-else:
-    remove = ()
-
+remove = ('headers', 'footers', 'quotes') if opts.filtered else ()
 print("Loading 20 newsgroups dataset for categories:")
 print(categories if categories else "all")
 
@@ -165,11 +162,7 @@ print("n_samples: %d, n_features: %d" % X_test.shape)
 print()
 
 # mapping from integer feature name to original token string
-if opts.use_hashing:
-    feature_names = None
-else:
-    feature_names = vectorizer.get_feature_names()
-
+feature_names = None if opts.use_hashing else vectorizer.get_feature_names()
 if opts.select_chi2:
     print("Extracting %d best features by a chi-squared test" %
           opts.select_chi2)
@@ -190,7 +183,7 @@ if feature_names:
 
 def trim(s):
     """Trim string to fit on terminal (assuming 80-column display)"""
-    return s if len(s) <= 80 else s[:77] + "..."
+    return s if len(s) <= 80 else f"{s[:77]}..."
 
 
 ###############################################################################
@@ -220,8 +213,7 @@ def benchmark(clf):
             print("top 10 keywords per class:")
             for i, category in enumerate(categories):
                 top10 = np.argsort(clf.coef_[i])[-10:]
-                print(trim("%s: %s"
-                      % (category, " ".join(feature_names[top10]))))
+                print(trim(f'{category}: {" ".join(feature_names[top10])}'))
         print()
 
     if opts.print_report:
@@ -251,15 +243,15 @@ for clf, name in (
 
 for penalty in ["l2", "l1"]:
     print('=' * 80)
-    print("%s penalty" % penalty.upper())
-    # Train Liblinear model
-    results.append(benchmark(LinearSVC(loss='l2', penalty=penalty,
-                                            dual=False, tol=1e-3)))
-
-    # Train SGD model
-    results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
-                                           penalty=penalty)))
-
+    print(f"{penalty.upper()} penalty")
+    results.extend(
+        (
+            benchmark(
+                LinearSVC(loss='l2', penalty=penalty, dual=False, tol=1e-3)
+            ),
+            benchmark(SGDClassifier(alpha=0.0001, n_iter=50, penalty=penalty)),
+        )
+    )
 # Train SGD with Elastic Net penalty
 print('=' * 80)
 print("Elastic-Net penalty")
@@ -274,9 +266,9 @@ results.append(benchmark(NearestCentroid()))
 # Train sparse Naive Bayes classifiers
 print('=' * 80)
 print("Naive Bayes")
-results.append(benchmark(MultinomialNB(alpha=.01)))
-results.append(benchmark(BernoulliNB(alpha=.01)))
-
+results.extend(
+    (benchmark(MultinomialNB(alpha=0.01)), benchmark(BernoulliNB(alpha=0.01)))
+)
 print('=' * 80)
 print("LinearSVC with L1-based feature selection")
 # The smaller C, the stronger the regularization.

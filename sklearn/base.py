@@ -132,20 +132,13 @@ def _pprint(params, offset=0, printer=repr):
     # Do a multi-line justified repr:
     options = np.get_printoptions()
     np.set_printoptions(precision=5, threshold=64, edgeitems=2)
-    params_list = list()
+    params_list = []
     this_line_length = offset
     line_sep = ',\n' + (1 + offset // 2) * ' '
     for i, (k, v) in enumerate(sorted(six.iteritems(params))):
-        if type(v) is float:
-            # use str for representing floating point numbers
-            # this way we get consistent representation across
-            # architectures and versions.
-            this_repr = '%s=%s' % (k, str(v))
-        else:
-            # use repr of the rest
-            this_repr = '%s=%s' % (k, printer(v))
+        this_repr = f'{k}={str(v)}' if type(v) is float else f'{k}={printer(v)}'
         if len(this_repr) > 500:
-            this_repr = this_repr[:300] + '...' + this_repr[-100:]
+            this_repr = f'{this_repr[:300]}...{this_repr[-100:]}'
         if i > 0:
             if (this_line_length + len(this_repr) >= 75 or '\n' in this_repr):
                 params_list.append(line_sep)
@@ -158,9 +151,7 @@ def _pprint(params, offset=0, printer=repr):
 
     np.set_printoptions(**options)
     lines = ''.join(params_list)
-    # Strip trailing space to avoid nightmare in doctests
-    lines = '\n'.join(l.rstrip(' ') for l in lines.split('\n'))
-    return lines
+    return '\n'.join(l.rstrip(' ') for l in lines.split('\n'))
 
 
 ###############################################################################
@@ -215,7 +206,7 @@ class BaseEstimator(object):
         params : mapping of string to any
             Parameter names mapped to their values.
         """
-        out = dict()
+        out = {}
         for key in self._get_param_names():
             # We need deprecation warnings to always be on in order to
             # catch deprecated param values.
@@ -234,7 +225,7 @@ class BaseEstimator(object):
             # XXX: should we rather test if instance of estimator?
             if deep and hasattr(value, 'get_params'):
                 deep_items = value.get_params().items()
-                out.update((key + '__' + k, val) for k, val in deep_items)
+                out |= ((f'{key}__{k}', val) for k, val in deep_items)
             out[key] = value
         return out
 
@@ -266,14 +257,13 @@ class BaseEstimator(object):
                                      (name, self))
                 sub_object = valid_params[name]
                 sub_object.set_params(**{sub_name: value})
-            else:
-                # simple objects case
-                if key not in valid_params:
-                    raise ValueError('Invalid parameter %s for estimator %s. '
-                                     'Check the list of available parameters '
-                                     'with `estimator.get_params().keys()`.' %
-                                     (key, self.__class__.__name__))
+            elif key in valid_params:
                 setattr(self, key, value)
+            else:
+                raise ValueError('Invalid parameter %s for estimator %s. '
+                                 'Check the list of available parameters '
+                                 'with `estimator.get_params().keys()`.' %
+                                 (key, self.__class__.__name__))
         return self
 
     def __repr__(self):

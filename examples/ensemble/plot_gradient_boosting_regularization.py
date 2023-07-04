@@ -19,6 +19,7 @@ analogous to the random splits in Random Forests
 .. [1] T. Hastie, R. Tibshirani and J. Friedman, "Elements of Statistical
     Learning Ed. 2", Springer, 2009.
 """
+
 print(__doc__)
 
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
@@ -57,7 +58,7 @@ for label, color, setting in [('No shrinkage', 'orange',
                               ('learning_rate=0.1, max_features=2', 'magenta',
                                {'learning_rate': 0.1, 'max_features': 2})]:
     params = dict(original_params)
-    params.update(setting)
+    params |= setting
 
     clf = ensemble.GradientBoostingClassifier(**params)
     clf.fit(X_train, y_train)

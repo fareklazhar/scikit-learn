@@ -85,7 +85,7 @@ for linkage in ('ward', 'average', 'complete'):
     clustering.fit(X_red)
     print("%s : %.2fs" % (linkage, time() - t0))
 
-    plot_clustering(X_red, X, clustering.labels_, "%s linkage" % linkage)
+    plot_clustering(X_red, X, clustering.labels_, f"{linkage} linkage")
 
 
 plt.show()

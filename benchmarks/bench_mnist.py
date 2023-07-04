@@ -129,7 +129,7 @@ if __name__ == "__main__":
     print("===================")
     print("%s %d" % ("number of features:".ljust(25), X_train.shape[1]))
     print("%s %d" % ("number of classes:".ljust(25), np.unique(y_train).size))
-    print("%s %s" % ("data type:".ljust(25), X_train.dtype))
+    print(f'{"data type:".ljust(25)} {X_train.dtype}')
     print("%s %d (size=%dMB)" % ("number of train samples:".ljust(25),
                                  X_train.shape[0], int(X_train.nbytes / 1e6)))
     print("%s %d (size=%dMB)" % ("number of test samples:".ljust(25),
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     print("====================")
     error, train_time, test_time = {}, {}, {}
     for name in sorted(args["classifiers"]):
-        print("Training %s ... " % name, end="")
+        print(f"Training {name} ... ", end="")
         estimator = ESTIMATORS[name]
         estimator_params = estimator.get_params()
 

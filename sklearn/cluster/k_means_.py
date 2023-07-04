@@ -89,11 +89,7 @@ def _k_init(X, n_clusters, x_squared_norms, random_state, n_local_trials=None):
 
     # Pick first center randomly
     center_id = random_state.randint(n_samples)
-    if sp.issparse(X):
-        centers[0] = X[center_id].toarray()
-    else:
-        centers[0] = X[center_id]
-
+    centers[0] = X[center_id].toarray() if sp.issparse(X) else X[center_id]
     # Initialize list of closest distances and calculate current potential
     closest_dist_sq = euclidean_distances(
         centers[0, np.newaxis], X, Y_norm_squared=x_squared_norms,
@@ -283,9 +279,7 @@ def k_means(X, n_clusters, init='k-means++', precompute_distances='auto',
     if precompute_distances == 'auto':
         n_samples = X.shape[0]
         precompute_distances = (n_clusters * n_samples) < 12e6
-    elif isinstance(precompute_distances, bool):
-        pass
-    else:
+    elif not isinstance(precompute_distances, bool):
         raise ValueError("precompute_distances should be 'auto' or True/False"
                          ", but a value of %r was passed" %
                          precompute_distances)
@@ -316,7 +310,7 @@ def k_means(X, n_clusters, init='k-means++', precompute_distances='auto',
     if n_jobs == 1:
         # For a single thread, less memory is needed if we just store one set
         # of the best results (as opposed to one set per run per thread).
-        for it in range(n_init):
+        for _ in range(n_init):
             # run a k-means once
             labels, inertia, centers, n_iter_ = _kmeans_single(
                 X, n_clusters, max_iter=max_iter, init=init, verbose=verbose,
@@ -570,10 +564,10 @@ def _labels_inertia(X, x_squared_norms, centers,
     if sp.issparse(X):
         inertia = _k_means._assign_labels_csr(
             X, x_squared_norms, centers, labels, distances=distances)
+    elif precompute_distances:
+        return _labels_inertia_precompute_dense(X, x_squared_norms,
+                                                centers, distances)
     else:
-        if precompute_distances:
-            return _labels_inertia_precompute_dense(X, x_squared_norms,
-                                                    centers, distances)
         inertia = _k_means._assign_labels_array(
             X, x_squared_norms, centers, labels, distances=distances)
     return labels, inertia
@@ -794,7 +788,7 @@ class KMeans(BaseEstimator, ClusterMixin, TransformerMixin):
                         warn_on_dtype=True)
         n_samples, n_features = X.shape
         expected_n_features = self.cluster_centers_.shape[1]
-        if not n_features == expected_n_features:
+        if n_features != expected_n_features:
             raise ValueError("Incorrect number of features. "
                              "Got %d features, expected %d" % (
                                  n_features, expected_n_features))
@@ -984,8 +978,7 @@ def _mini_batch_step(X, x_squared_norms, centers, counts,
         if to_reassign.sum() > .5 * X.shape[0]:
             indices_dont_reassign = np.argsort(counts)[int(.5 * X.shape[0]):]
             to_reassign[indices_dont_reassign] = False
-        n_reassigns = to_reassign.sum()
-        if n_reassigns:
+        if n_reassigns := to_reassign.sum():
             # Pick new clusters amongst observations with uniform probability
             new_centers = choice(X.shape[0], replace=False, size=n_reassigns,
                                  random_state=random_state)
@@ -1064,7 +1057,7 @@ def _mini_batch_convergence(model, iteration_idx, n_iter, tol,
         ewa_inertia = batch_inertia
     else:
         alpha = float(model.batch_size) * 2.0 / (n_samples + 1)
-        alpha = 1.0 if alpha > 1.0 else alpha
+        alpha = min(alpha, 1.0)
         ewa_diff = ewa_diff * (1 - alpha) + centers_squared_diff * alpha
         ewa_inertia = ewa_inertia * (1 - alpha) + batch_inertia * alpha
 
@@ -1271,8 +1264,7 @@ class MiniBatchKMeans(KMeans):
         init_size = self.init_size
         if init_size is None:
             init_size = 3 * self.batch_size
-        if init_size > n_samples:
-            init_size = n_samples
+        init_size = min(init_size, n_samples)
         self.init_size_ = init_size
 
         validation_indices = random_state.random_integers(

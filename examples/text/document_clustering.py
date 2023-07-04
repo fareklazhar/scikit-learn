@@ -49,6 +49,7 @@ necessary to get a good convergence.
 
 """
 
+
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Lars Buitinck <L.J.Buitinck@uva.nl>
 # License: BSD 3 clause
@@ -171,8 +172,7 @@ if opts.n_components:
     print("done in %fs" % (time() - t0))
 
     explained_variance = svd.explained_variance_ratio_.sum()
-    print("Explained variance of the SVD step: {}%".format(
-        int(explained_variance * 100)))
+    print(f"Explained variance of the SVD step: {int(explained_variance * 100)}%")
 
     print()
 
@@ -187,7 +187,7 @@ else:
     km = KMeans(n_clusters=true_k, init='k-means++', max_iter=100, n_init=1,
                 verbose=opts.verbose)
 
-print("Clustering sparse data with %s" % km)
+print(f"Clustering sparse data with {km}")
 t0 = time()
 km.fit(X)
 print("done in %0.3fs" % (time() - t0))
@@ -217,5 +217,5 @@ if not opts.use_hashing:
     for i in range(true_k):
         print("Cluster %d:" % i, end='')
         for ind in order_centroids[i, :10]:
-            print(' %s' % terms[ind], end='')
+            print(f' {terms[ind]}', end='')
         print()

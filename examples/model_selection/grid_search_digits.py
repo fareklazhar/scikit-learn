@@ -16,6 +16,7 @@ sections on :ref:`cross_validation` and :ref:`grid_search`.
 
 """
 
+
 from __future__ import print_function
 
 from sklearn import datasets
@@ -47,11 +48,12 @@ tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
 scores = ['precision', 'recall']
 
 for score in scores:
-    print("# Tuning hyper-parameters for %s" % score)
+    print(f"# Tuning hyper-parameters for {score}")
     print()
 
-    clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5,
-                       scoring='%s_weighted' % score)
+    clf = GridSearchCV(
+        SVC(C=1), tuned_parameters, cv=5, scoring=f'{score}_weighted'
+    )
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set:")

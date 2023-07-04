@@ -20,7 +20,7 @@ def get_data(N, D, dataset='dense'):
         X = X[:, i]
         return X[:N, :D]
     else:
-        raise ValueError("invalid dataset: %s" % dataset)
+        raise ValueError(f"invalid dataset: {dataset}")
 
 
 def barplot_neighbors(Nrange=2 ** np.arange(1, 11),
@@ -108,6 +108,8 @@ def barplot_neighbors(Nrange=2 ** np.arange(1, 11),
 
     pl.figure(figsize=(8, 11))
 
+    width = 0.8
+
     for (sbplt, vals, quantity,
          build_time, query_time) in [(311, Nrange, 'N',
                                       N_results_build,
@@ -129,8 +131,6 @@ def barplot_neighbors(Nrange=2 ** np.arange(1, 11),
 
         for i, alg in enumerate(algorithms):
             xvals = 0.1 + i * (1 + len(vals)) + np.arange(len(vals))
-            width = 0.8
-
             c_bar = pl.bar(xvals, build_time[alg] - bottom,
                            width, bottom, color='r')
             q_bar = pl.bar(xvals, query_time[alg],
@@ -154,16 +154,13 @@ def barplot_neighbors(Nrange=2 ** np.arange(1, 11),
             label.set_rotation(-90)
             label.set_fontsize(10)
 
-        title_string = 'Varying %s' % quantity
+        title_string = f'Varying {quantity}'
 
-        descr_string = ''
-
-        for s in 'NDk':
-            if s == quantity:
-                pass
-            else:
-                descr_string += '%s = %i, ' % (s, fiducial_values[s])
-
+        descr_string = ''.join(
+            '%s = %i, ' % (s, fiducial_values[s])
+            for s in 'NDk'
+            if s != quantity
+        )
         descr_string = descr_string[:-2]
 
         pl.text(1.01, 0.5, title_string,
@@ -174,7 +171,7 @@ def barplot_neighbors(Nrange=2 ** np.arange(1, 11),
                 transform=ax.transAxes, rotation=-90,
                 ha='right', va='center')
 
-        pl.gcf().suptitle("%s data set" % dataset.capitalize(), fontsize=16)
+        pl.gcf().suptitle(f"{dataset.capitalize()} data set", fontsize=16)
 
     pl.figlegend((c_bar, q_bar), ('construction', 'N-point query'),
                  'upper right')

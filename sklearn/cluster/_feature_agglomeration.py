@@ -40,13 +40,14 @@ class AgglomerationTransform(TransformerMixin):
 
         pooling_func = self.pooling_func
         X = check_array(X)
-        nX = []
         if len(self.labels_) != X.shape[1]:
             raise ValueError("X has a different number of features than "
                              "during fitting.")
 
-        for l in np.unique(self.labels_):
-            nX.append(pooling_func(X[:, self.labels_ == l], axis=1))
+        nX = [
+            pooling_func(X[:, self.labels_ == l], axis=1)
+            for l in np.unique(self.labels_)
+        ]
         return np.array(nX).T
 
     def inverse_transform(self, Xred):

@@ -51,8 +51,8 @@ t = np.pi * np.linspace(0, 1, n_features)
 def sqr(x):
     return np.sign(np.cos(x))
 
-X = list()
-y = list()
+X = []
+y = []
 for i, (phi, a) in enumerate([(.5, .15), (.5, .6), (.3, .2)]):
     for _ in range(30):
         phase_noise = .01 * np.random.normal()
@@ -108,7 +108,7 @@ for index, metric in enumerate(["cosine", "euclidean", "cityblock"]):
     plt.xticks(range(n_clusters), labels, rotation=45)
     plt.yticks(range(n_clusters), labels)
     plt.colorbar()
-    plt.suptitle("Interclass %s distances" % metric, size=18)
+    plt.suptitle(f"Interclass {metric} distances", size=18)
     plt.tight_layout()
 
 
@@ -123,7 +123,7 @@ for index, metric in enumerate(["cosine", "euclidean", "cityblock"]):
         plt.plot(X[model.labels_ == l].T, c=c, alpha=.5)
     plt.axis('tight')
     plt.axis('off')
-    plt.suptitle("AgglomerativeClustering(affinity=%s)" % metric, size=20)
+    plt.suptitle(f"AgglomerativeClustering(affinity={metric})", size=20)
 
 
 plt.show()

@@ -15,6 +15,7 @@ show how to retrieve:
 - the decision path shared by a group of samples.
 
 """
+
 import numpy as np
 
 from sklearn.model_selection import train_test_split
@@ -22,8 +23,8 @@ from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 
 iris = load_iris()
-X = iris.data
 y = iris.target
+X = iris.data
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
 estimator = DecisionTreeClassifier(max_leaf_nodes=3, random_state=0)
@@ -57,7 +58,7 @@ threshold = estimator.tree_.threshold
 node_depth = np.zeros(shape=n_nodes)
 is_leaves = np.zeros(shape=n_nodes, dtype=bool)
 stack = [(0, -1)]  # seed is the root node id and its parent depth
-while len(stack) > 0:
+while stack:
     node_id, parent_depth = stack.pop()
     node_depth[node_id] = parent_depth + 1
 
@@ -68,9 +69,9 @@ while len(stack) > 0:
     else:
         is_leaves[node_id] = True
 
-print("The binary tree structure has %s nodes and has "
-      "the following tree structure:"
-      % n_nodes)
+print(
+    f"The binary tree structure has {n_nodes} nodes and has the following tree structure:"
+)
 for i in range(n_nodes):
     if is_leaves[i]:
         print("%snode=%s leaf node." % (node_depth[i] * "\t", i))
@@ -104,7 +105,7 @@ sample_id = 0
 node_index = node_indicator.indices[node_indicator.indptr[sample_id]:
                                     node_indicator.indptr[sample_id + 1]]
 
-print('Rules used to predict sample %s: ' % sample_id)
+print(f'Rules used to predict sample {sample_id}: ')
 for node_id in node_index:
     if leave_id[sample_id] != node_id:
         continue
@@ -114,13 +115,9 @@ for node_id in node_index:
     else:
         threshold_sign = ">"
 
-    print("decision id node %s : (X[%s, %s] (= %s) %s %s)"
-          % (node_id,
-             sample_id,
-             feature[node_id],
-             X_test[i, feature[node_id]],
-             threshold_sign,
-             threshold[node_id]))
+    print(
+        f"decision id node {node_id} : (X[{sample_id}, {feature[node_id]}] (= {X_test[i, feature[node_id]]}) {threshold_sign} {threshold[node_id]})"
+    )
 
 # For a group of samples, we have the following common node.
 sample_ids = [0, 1]

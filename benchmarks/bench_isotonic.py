@@ -72,8 +72,9 @@ if __name__ == '__main__':
                           args.log_max_problem_size):
         n = 10 ** exponent
         Y = DATASET_GENERATORS[args.dataset](n)
-        time_per_iteration = \
-            [bench_isotonic_regression(Y) for i in range(args.iterations)]
+        time_per_iteration = [
+            bench_isotonic_regression(Y) for _ in range(args.iterations)
+        ]
         timing = (n, np.mean(time_per_iteration))
         timings.append(timing)
 
