@@ -57,6 +57,7 @@ overall noise level is very small, indicating that the data can be very well
 explained by the model. The figure shows also that the model makes very
 confident predictions until around 2015.
 """
+
 print(__doc__)
 
 # Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
@@ -91,7 +92,7 @@ gp = GaussianProcessRegressor(kernel=kernel_gpml, alpha=0,
                               optimizer=None, normalize_y=True)
 gp.fit(X, y)
 
-print("GPML kernel: %s" % gp.kernel_)
+print(f"GPML kernel: {gp.kernel_}")
 print("Log-marginal-likelihood: %.3f"
       % gp.log_marginal_likelihood(gp.kernel_.theta))
 

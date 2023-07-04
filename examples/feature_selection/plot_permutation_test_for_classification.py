@@ -11,6 +11,7 @@ obtained in the first place.
 
 """
 
+
 # Author:  Alexandre Gramfort <alexandre.gramfort@inria.fr>
 # License: BSD 3 clause
 
@@ -45,7 +46,7 @@ cv = StratifiedKFold(2)
 score, permutation_scores, pvalue = permutation_test_score(
     svm, X, y, scoring="accuracy", cv=cv, n_permutations=100, n_jobs=1)
 
-print("Classification score %s (pvalue : %s)" % (score, pvalue))
+print(f"Classification score {score} (pvalue : {pvalue})")
 
 ###############################################################################
 # View histogram of permutation scores

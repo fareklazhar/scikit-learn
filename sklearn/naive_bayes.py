@@ -395,8 +395,7 @@ class GaussianNB(BaseNB):
                                  (self.sigma_[i, :]), 1)
             joint_log_likelihood.append(jointi + n_ij)
 
-        joint_log_likelihood = np.array(joint_log_likelihood).T
-        return joint_log_likelihood
+        return np.array(joint_log_likelihood).T
 
 
 class BaseDiscreteNB(BaseNB):

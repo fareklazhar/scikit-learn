@@ -71,6 +71,7 @@ matrix as a binary prediction (micro-averaging).
              :func:`sklearn.metrics.precision_score`,
              :func:`sklearn.metrics.f1_score`
 """
+
 print(__doc__)
 
 import matplotlib.pyplot as plt
@@ -112,9 +113,9 @@ classifier = OneVsRestClassifier(svm.SVC(kernel='linear', probability=True,
 y_score = classifier.fit(X_train, y_train).decision_function(X_test)
 
 # Compute Precision-Recall and plot curve
-precision = dict()
-recall = dict()
-average_precision = dict()
+precision = {}
+recall = {}
+average_precision = {}
 for i in range(n_classes):
     precision[i], recall[i], _ = precision_recall_curve(y_test[:, i],
                                                         y_score[:, i])

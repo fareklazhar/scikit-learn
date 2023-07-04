@@ -9,6 +9,7 @@ This exercise is used in the :ref:`cv_estimators_tut` part of the
 :ref:`model_selection_tut` section of the :ref:`stat_learn_tut_index`.
 """
 
+
 from __future__ import print_function
 print(__doc__)
 
@@ -28,8 +29,8 @@ y = diabetes.target[:150]
 lasso = Lasso(random_state=0)
 alphas = np.logspace(-4, -0.5, 30)
 
-scores = list()
-scores_std = list()
+scores = []
+scores_std = []
 
 n_folds = 3
 

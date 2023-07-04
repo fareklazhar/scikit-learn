@@ -349,7 +349,7 @@ class _CalibratedClassifier(object):
         df, idx_pos_class = self._preproc(X)
 
         for k, this_df, calibrator in \
-                zip(idx_pos_class, df.T, self.calibrators_):
+                    zip(idx_pos_class, df.T, self.calibrators_):
             if n_classes == 2:
                 k += 1
             proba[:, k] = calibrator.predict(this_df)
@@ -364,7 +364,7 @@ class _CalibratedClassifier(object):
         proba[np.isnan(proba)] = 1. / n_classes
 
         # Deal with cases where the predicted probability minimally exceeds 1.0
-        proba[(1.0 < proba) & (proba <= 1.0 + 1e-5)] = 1.0
+        proba[(proba > 1.0) & (proba <= 1.0 + 1e-5)] = 1.0
 
         return proba
 
@@ -414,10 +414,7 @@ def _sigmoid_calibration(df, y, sample_weight=None):
         E = np.exp(AB[0] * F + AB[1])
         P = 1. / (1. + E)
         l = -(T * np.log(P + tiny) + T1 * np.log(1. - P + tiny))
-        if sample_weight is not None:
-            return (sample_weight * l).sum()
-        else:
-            return l.sum()
+        return (sample_weight * l).sum() if sample_weight is not None else l.sum()
 
     def grad(AB):
         # gradient of the objective function

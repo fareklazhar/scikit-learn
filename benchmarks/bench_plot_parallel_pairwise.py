@@ -25,12 +25,12 @@ def plot(func):
         func(X, n_jobs=-1)
         multi_core.append(time.time() - start)
 
-    pl.figure('scikit-learn parallel %s benchmark results' % func.__name__)
+    pl.figure(f'scikit-learn parallel {func.__name__} benchmark results')
     pl.plot(sample_sizes, one_core, label="one core")
     pl.plot(sample_sizes, multi_core, label="multi core")
     pl.xlabel('n_samples')
     pl.ylabel('Time (s)')
-    pl.title('Parallel %s' % func.__name__)
+    pl.title(f'Parallel {func.__name__}')
     pl.legend()
 
 def euclidean_distances(X, n_jobs):

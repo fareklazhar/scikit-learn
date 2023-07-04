@@ -18,6 +18,7 @@ intended for large datasets which do not fit in main memory, requiring
 incremental approaches.
 
 """
+
 print(__doc__)
 
 # Authors: Kyle Kastner
@@ -53,7 +54,7 @@ for X_transformed, title in [(X_ipca, "Incremental PCA"), (X_pca, "PCA")]:
         plt.title(title + " of iris dataset\nMean absolute unsigned error "
                   "%.6f" % err)
     else:
-        plt.title(title + " of iris dataset")
+        plt.title(f"{title} of iris dataset")
     plt.legend(loc="best", shadow=False, scatterpoints=1)
     plt.axis([-4, 4, -1.5, 1.5])
 

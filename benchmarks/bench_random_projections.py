@@ -26,17 +26,11 @@ from sklearn.random_projection import (SparseRandomProjection,
 
 
 def type_auto_or_float(val):
-    if val == "auto":
-        return "auto"
-    else:
-        return float(val)
+    return "auto" if val == "auto" else float(val)
 
 
 def type_auto_or_int(val):
-    if val == "auto":
-        return "auto"
-    else:
-        return int(val)
+    return "auto" if val == "auto" else int(val)
 
 
 def compute_time(t_start, delta):
@@ -81,9 +75,9 @@ def make_sparse_random_data(n_samples, n_features, n_nonzeros,
 
 
 def print_row(clf_type, time_fit, time_transform):
-    print("%s | %s | %s" % (clf_type.ljust(30),
-                           ("%.4fs" % time_fit).center(12),
-                           ("%.4fs" % time_transform).center(12)))
+    print(
+        f'{clf_type.ljust(30)} | {("%.4fs" % time_fit).center(12)} | {("%.4fs" % time_transform).center(12)}'
+    )
 
 
 if __name__ == "__main__":
@@ -168,19 +162,16 @@ if __name__ == "__main__":
     print('')
 
     ###########################################################################
-    # Set transformer input
-    ###########################################################################
-    transformers = {}
-
-    ###########################################################################
     # Set GaussianRandomProjection input
     gaussian_matrix_params = {
         "n_components": opts.n_components,
         "random_state": opts.random_seed
     }
-    transformers["GaussianRandomProjection"] = \
-        GaussianRandomProjection(**gaussian_matrix_params)
-
+    transformers = {
+        "GaussianRandomProjection": GaussianRandomProjection(
+            **gaussian_matrix_params
+        )
+    }
     ###########################################################################
     # Set SparseRandomProjection input
     sparse_matrix_params = {
@@ -210,7 +201,7 @@ if __name__ == "__main__":
     print("done")
 
     for name in selected_transformers:
-        print("Perform benchmarks for %s..." % name)
+        print(f"Perform benchmarks for {name}...")
 
         for iteration in xrange(opts.n_times):
             print("\titer %s..." % iteration, end="")
@@ -238,11 +229,11 @@ if __name__ == "__main__":
 
     print("Transformer performance:")
     print("===========================")
-    print("Results are averaged over %s repetition(s)." % opts.n_times)
+    print(f"Results are averaged over {opts.n_times} repetition(s).")
     print("")
-    print("%s | %s | %s" % ("Transformer".ljust(30),
-                            "fit".center(12),
-                            "transform".center(12)))
+    print(
+        f'{"Transformer".ljust(30)} | {"fit".center(12)} | {"transform".center(12)}'
+    )
     print(31 * "-" + ("|" + "-" * 14) * 2)
 
     for name in sorted(selected_transformers):

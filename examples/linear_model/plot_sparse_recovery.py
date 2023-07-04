@@ -67,16 +67,16 @@ def mutual_incoherence(X_relevant, X_irelevant):
     return np.max(np.abs(projector).sum(axis=1))
 
 
+###########################################################################
+# Simulate regression data with a correlated design
+n_features = 501
+n_relevant_features = 3
+noise_level = .2
+coef_min = .2
+# The Donoho-Tanner phase transition is around n_samples=25: below we
+# will completely fail to recover in the well-conditioned case
+n_samples = 25
 for conditioning in (1, 1e-4):
-    ###########################################################################
-    # Simulate regression data with a correlated design
-    n_features = 501
-    n_relevant_features = 3
-    noise_level = .2
-    coef_min = .2
-    # The Donoho-Tanner phase transition is around n_samples=25: below we
-    # will completely fail to recover in the well-conditioned case
-    n_samples = 25
     block_size = n_relevant_features
 
     rng = np.random.RandomState(42)

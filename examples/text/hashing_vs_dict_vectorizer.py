@@ -65,7 +65,7 @@ categories = [
 #categories = None
 
 print(__doc__)
-print("Usage: %s [n_features_for_hashing]" % sys.argv[0])
+print(f"Usage: {sys.argv[0]} [n_features_for_hashing]")
 print("    The default number of features is 2**18.")
 print()
 

@@ -163,24 +163,21 @@ def graph_lasso(emp_cov, alpha, cov_init=None, mode='cd', tol=1e-4,
     """
     _, n_features = emp_cov.shape
     if alpha == 0:
-        if return_costs:
-            precision_ = linalg.inv(emp_cov)
-            cost = - 2. * log_likelihood(emp_cov, precision_)
-            cost += n_features * np.log(2 * np.pi)
-            d_gap = np.sum(emp_cov * precision_) - n_features
-            if return_n_iter:
-                return emp_cov, precision_, (cost, d_gap), 0
-            else:
-                return emp_cov, precision_, (cost, d_gap)
+        if not return_costs:
+            return (
+                (emp_cov, linalg.inv(emp_cov), 0)
+                if return_n_iter
+                else (emp_cov, linalg.inv(emp_cov))
+            )
+        precision_ = linalg.inv(emp_cov)
+        cost = - 2. * log_likelihood(emp_cov, precision_)
+        cost += n_features * np.log(2 * np.pi)
+        d_gap = np.sum(emp_cov * precision_) - n_features
+        if return_n_iter:
+            return emp_cov, precision_, (cost, d_gap), 0
         else:
-            if return_n_iter:
-                return emp_cov, linalg.inv(emp_cov), 0
-            else:
-                return emp_cov, linalg.inv(emp_cov)
-    if cov_init is None:
-        covariance_ = emp_cov.copy()
-    else:
-        covariance_ = cov_init.copy()
+            return emp_cov, precision_, (cost, d_gap)
+    covariance_ = emp_cov.copy() if cov_init is None else cov_init.copy()
     # As a trivial regularization (Tikhonov like), we scale down the
     # off-diagonal coefficients of our starting point: This is needed, as
     # in the cross-validation the cov_init can easily be
@@ -193,7 +190,7 @@ def graph_lasso(emp_cov, alpha, cov_init=None, mode='cd', tol=1e-4,
     precision_ = pinvh(covariance_)
 
     indices = np.arange(n_features)
-    costs = list()
+    costs = []
     # The different l1 regression solver have different numerical errors
     if mode == 'cd':
         errors = dict(over='raise', invalid='ignore')
@@ -251,20 +248,19 @@ def graph_lasso(emp_cov, alpha, cov_init=None, mode='cd', tol=1e-4,
                           ' dual gap: %.3e' % (max_iter, d_gap),
                           ConvergenceWarning)
     except FloatingPointError as e:
-        e.args = (e.args[0]
-                  + '. The system is too ill-conditioned for this solver',)
+        e.args = (f'{e.args[0]}. The system is too ill-conditioned for this solver', )
         raise e
 
     if return_costs:
-        if return_n_iter:
-            return covariance_, precision_, costs, i + 1
-        else:
-            return covariance_, precision_, costs
+        return (
+            (covariance_, precision_, costs, i + 1)
+            if return_n_iter
+            else (covariance_, precision_, costs)
+        )
+    if return_n_iter:
+        return covariance_, precision_, i + 1
     else:
-        if return_n_iter:
-            return covariance_, precision_, i + 1
-        else:
-            return covariance_, precision_
+        return covariance_, precision_
 
 
 class GraphLasso(EmpiricalCovariance):
@@ -340,10 +336,7 @@ class GraphLasso(EmpiricalCovariance):
         X = check_array(X, ensure_min_features=2, ensure_min_samples=2,
                         estimator=self)
 
-        if self.assume_centered:
-            self.location_ = np.zeros(X.shape[1])
-        else:
-            self.location_ = X.mean(0)
+        self.location_ = np.zeros(X.shape[1]) if self.assume_centered else X.mean(0)
         emp_cov = empirical_covariance(
             X, assume_centered=self.assume_centered)
         self.covariance_, self.precision_, self.n_iter_ = graph_lasso(
@@ -407,13 +400,10 @@ def graph_lasso_path(X, alphas, cov_init=None, X_test=None, mode='cd',
     """
     inner_verbose = max(0, verbose - 1)
     emp_cov = empirical_covariance(X)
-    if cov_init is None:
-        covariance_ = emp_cov.copy()
-    else:
-        covariance_ = cov_init
-    covariances_ = list()
-    precisions_ = list()
-    scores_ = list()
+    covariance_ = emp_cov.copy() if cov_init is None else cov_init
+    covariances_ = []
+    precisions_ = []
+    scores_ = []
     if X_test is not None:
         test_emp_cov = empirical_covariance(X_test)
 
@@ -574,17 +564,14 @@ class GraphLassoCV(GraphLasso):
         """
         # Covariance does not make sense for a single feature
         X = check_array(X, ensure_min_features=2, estimator=self)
-        if self.assume_centered:
-            self.location_ = np.zeros(X.shape[1])
-        else:
-            self.location_ = X.mean(0)
+        self.location_ = np.zeros(X.shape[1]) if self.assume_centered else X.mean(0)
         emp_cov = empirical_covariance(
             X, assume_centered=self.assume_centered)
 
         cv = check_cv(self.cv, y, classifier=False)
 
         # List of (alpha, scores, covs)
-        path = list()
+        path = []
         n_alphas = self.alphas
         inner_verbose = max(0, self.verbose - 1)
 
@@ -650,8 +637,7 @@ class GraphLassoCV(GraphLasso):
                 # non-zero coefficients
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
-            elif (best_index == last_finite_idx
-                    and not best_index == len(path) - 1):
+            elif best_index == last_finite_idx and best_index != len(path) - 1:
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]

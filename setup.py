@@ -48,12 +48,20 @@ from sklearn._build_utils import cythonize
 # We need to import setuptools early, if we want setuptools features,
 # as it monkey-patches the 'setup' function
 # For some commands, use setuptools
-SETUPTOOLS_COMMANDS = set([
-    'develop', 'release', 'bdist_egg', 'bdist_rpm',
-    'bdist_wininst', 'install_egg_info', 'build_sphinx',
-    'egg_info', 'easy_install', 'upload', 'bdist_wheel',
+SETUPTOOLS_COMMANDS = {
+    'develop',
+    'release',
+    'bdist_egg',
+    'bdist_rpm',
+    'bdist_wininst',
+    'install_egg_info',
+    'build_sphinx',
+    'egg_info',
+    'easy_install',
+    'upload',
+    'bdist_wheel',
     '--single-version-externally-managed',
-])
+}
 if SETUPTOOLS_COMMANDS.intersection(sys.argv):
     import setuptools
 
@@ -62,7 +70,7 @@ if SETUPTOOLS_COMMANDS.intersection(sys.argv):
         include_package_data=True,
     )
 else:
-    extra_setuptools_args = dict()
+    extra_setuptools_args = {}
 
 
 # Custom clean command to remove build artifacts
@@ -107,11 +115,11 @@ cmdclass = {'clean': CleanCommand}
 # to PyPI at release time.
 # The URL of the artifact repositories are configured in the setup.cfg file.
 
-WHEELHOUSE_UPLOADER_COMMANDS = set(['fetch_artifacts', 'upload_all'])
+WHEELHOUSE_UPLOADER_COMMANDS = {'fetch_artifacts', 'upload_all'}
 if WHEELHOUSE_UPLOADER_COMMANDS.intersection(sys.argv):
     import wheelhouse_uploader.cmd
 
-    cmdclass.update(vars(wheelhouse_uploader.cmd))
+    cmdclass |= vars(wheelhouse_uploader.cmd)
 
 
 def configuration(parent_package='', top_path=None):

@@ -171,23 +171,19 @@ def mean_shift(X, bandwidth=None, seeds=None, bin_seeding=False,
         raise ValueError("bandwidth needs to be greater than zero or None,\
             got %f" % bandwidth)
     if seeds is None:
-        if bin_seeding:
-            seeds = get_bin_seeds(X, bandwidth, min_bin_freq)
-        else:
-            seeds = X
+        seeds = get_bin_seeds(X, bandwidth, min_bin_freq) if bin_seeding else X
     n_samples, n_features = X.shape
-    center_intensity_dict = {}
     nbrs = NearestNeighbors(radius=bandwidth).fit(X)
 
     # execute iterations on all seeds in parallel
     all_res = Parallel(n_jobs=n_jobs)(
         delayed(_mean_shift_single_seed)
         (seed, X, nbrs, max_iter) for seed in seeds)
-    # copy results in a dictionary
-    for i in range(len(seeds)):
-        if all_res[i] is not None:
-            center_intensity_dict[all_res[i][0]] = all_res[i][1]
-
+    center_intensity_dict = {
+        all_res[i][0]: all_res[i][1]
+        for i in range(len(seeds))
+        if all_res[i] is not None
+    }
     if not center_intensity_dict:
         # nothing near seeds
         raise ValueError("No point was within bandwidth=%f of any seed."

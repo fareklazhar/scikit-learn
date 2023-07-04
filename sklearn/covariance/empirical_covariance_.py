@@ -132,10 +132,7 @@ class EmpiricalCovariance(BaseEstimator):
         # set covariance
         self.covariance_ = covariance
         # set precision
-        if self.store_precision:
-            self.precision_ = pinvh(covariance)
-        else:
-            self.precision_ = None
+        self.precision_ = pinvh(covariance) if self.store_precision else None
 
     def get_precision(self):
         """Getter for the precision matrix.
@@ -146,11 +143,7 @@ class EmpiricalCovariance(BaseEstimator):
             The precision matrix associated to the current covariance object.
 
         """
-        if self.store_precision:
-            precision = self.precision_
-        else:
-            precision = pinvh(self.covariance_)
-        return precision
+        return self.precision_ if self.store_precision else pinvh(self.covariance_)
 
     def fit(self, X, y=None):
         """Fits the Maximum Likelihood Estimator covariance model
@@ -171,10 +164,7 @@ class EmpiricalCovariance(BaseEstimator):
 
         """
         X = check_array(X)
-        if self.assume_centered:
-            self.location_ = np.zeros(X.shape[1])
-        else:
-            self.location_ = X.mean(0)
+        self.location_ = np.zeros(X.shape[1]) if self.assume_centered else X.mean(0)
         covariance = empirical_covariance(
             X, assume_centered=self.assume_centered)
         self._set_covariance(covariance)
@@ -205,10 +195,7 @@ class EmpiricalCovariance(BaseEstimator):
         # compute empirical covariance of the test set
         test_cov = empirical_covariance(
             X_test - self.location_, assume_centered=True)
-        # compute log likelihood
-        res = log_likelihood(test_cov, self.get_precision())
-
-        return res
+        return log_likelihood(test_cov, self.get_precision())
 
     def error_norm(self, comp_cov, norm='frobenius', scaling=True,
                    squared=True):
@@ -254,13 +241,7 @@ class EmpiricalCovariance(BaseEstimator):
         # optionally scale the error norm
         if scaling:
             squared_norm = squared_norm / error.shape[0]
-        # finally get either the squared norm or the norm
-        if squared:
-            result = squared_norm
-        else:
-            result = np.sqrt(squared_norm)
-
-        return result
+        return squared_norm if squared else np.sqrt(squared_norm)
 
     def mahalanobis(self, observations):
         """Computes the squared Mahalanobis distances of given observations.
@@ -281,7 +262,4 @@ class EmpiricalCovariance(BaseEstimator):
         precision = self.get_precision()
         # compute mahalanobis distances
         centered_obs = observations - self.location_
-        mahalanobis_dist = np.sum(
-            np.dot(centered_obs, precision) * centered_obs, 1)
-
-        return mahalanobis_dist
+        return np.sum(np.dot(centered_obs, precision) * centered_obs, 1)

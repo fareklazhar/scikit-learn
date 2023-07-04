@@ -76,6 +76,7 @@ is not scaled.
     behind this is the `l1` case works better on sparse data, while `l2`
     is better suited to the non-sparse case.
 """
+
 print(__doc__)
 
 
@@ -144,8 +145,7 @@ for fignum, (clf, cs, X, y) in enumerate(clf_sets):
             grid_cs = cs * float(scaler)  # scale the C's
             plt.semilogx(grid_cs, scores, label="fraction %.2f" %
                          train_size, color=colors[k], lw=lw)
-            plt.title('scaling=%s, penalty=%s, loss=%s' %
-                      (name, clf.penalty, clf.loss))
+            plt.title(f'scaling={name}, penalty={clf.penalty}, loss={clf.loss}')
 
     plt.legend(loc="best")
 plt.show()

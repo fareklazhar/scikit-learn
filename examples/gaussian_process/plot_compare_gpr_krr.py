@@ -44,6 +44,7 @@ hyperparameter space. The time for predicting is similar; however, generating
 the variance of the predictive distribution of GPR takes considerable longer
 than just predicting the mean.
 """
+
 print(__doc__)
 
 # Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
@@ -106,10 +107,12 @@ plt.figure(figsize=(10, 5))
 lw = 2
 plt.scatter(X, y, c='k', label='data')
 plt.plot(X_plot, np.sin(X_plot), color='navy', lw=lw, label='True')
-plt.plot(X_plot, y_kr, color='turquoise', lw=lw,
-         label='KRR (%s)' % kr.best_params_)
-plt.plot(X_plot, y_gpr, color='darkorange', lw=lw,
-         label='GPR (%s)' % gpr.kernel_)
+plt.plot(
+    X_plot, y_kr, color='turquoise', lw=lw, label=f'KRR ({kr.best_params_})'
+)
+plt.plot(
+    X_plot, y_gpr, color='darkorange', lw=lw, label=f'GPR ({gpr.kernel_})'
+)
 plt.fill_between(X_plot[:, 0], y_gpr - y_std, y_gpr + y_std, color='darkorange',
                  alpha=0.2)
 plt.xlabel('data')

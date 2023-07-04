@@ -69,11 +69,11 @@ class ReutersParser(html_parser.HTMLParser):
         self.encoding = encoding
 
     def handle_starttag(self, tag, attrs):
-        method = 'start_' + tag
+        method = f'start_{tag}'
         getattr(self, method, lambda x: None)(attrs)
 
     def handle_endtag(self, tag):
-        method = 'end_' + tag
+        method = f'end_{tag}'
         getattr(self, method, lambda: None)()
 
     def _reset(self):
@@ -90,8 +90,7 @@ class ReutersParser(html_parser.HTMLParser):
         self.docs = []
         for chunk in fd:
             self.feed(chunk.decode(self.encoding))
-            for doc in self.docs:
-                yield doc
+            yield from self.docs
             self.docs = []
         self.close()
 
@@ -159,8 +158,7 @@ def stream_reuters_documents(data_path=None):
         data_path = os.path.join(get_data_home(), "reuters")
     if not os.path.exists(data_path):
         """Download the dataset."""
-        print("downloading dataset (once and for all) into %s" %
-              data_path)
+        print(f"downloading dataset (once and for all) into {data_path}")
         os.mkdir(data_path)
 
         def progress(blocknum, bs, size):
@@ -181,8 +179,7 @@ def stream_reuters_documents(data_path=None):
 
     parser = ReutersParser()
     for filename in glob(os.path.join(data_path, "*.sgm")):
-        for doc in parser.parse(open(filename, 'rb')):
-            yield doc
+        yield from parser.parse(open(filename, 'rb'))
 
 
 ###############################################################################
@@ -325,8 +322,8 @@ def plot_accuracy(x, y, x_legend):
     """Plot accuracy as a function of x."""
     x = np.array(x)
     y = np.array(y)
-    plt.title('Classification accuracy as a function of %s' % x_legend)
-    plt.xlabel('%s' % x_legend)
+    plt.title(f'Classification accuracy as a function of {x_legend}')
+    plt.xlabel(f'{x_legend}')
     plt.ylabel('Accuracy')
     plt.grid(True)
     plt.plot(x, y)
@@ -356,10 +353,9 @@ plt.legend(cls_names, loc='best')
 # Plot fitting times
 plt.figure()
 fig = plt.gcf()
-cls_runtime = []
-for cls_name, stats in sorted(cls_stats.items()):
-    cls_runtime.append(stats['total_fit_time'])
-
+cls_runtime = [
+    stats['total_fit_time'] for cls_name, stats in sorted(cls_stats.items())
+]
 cls_runtime.append(total_vect_time)
 cls_names.append('Vectorization')
 bar_colors = ['b', 'g', 'r', 'c', 'm', 'y']
@@ -389,10 +385,10 @@ plt.show()
 
 # Plot prediction times
 plt.figure()
-cls_runtime = []
 cls_names = list(sorted(cls_stats.keys()))
-for cls_name, stats in sorted(cls_stats.items()):
-    cls_runtime.append(stats['prediction_time'])
+cls_runtime = [
+    stats['prediction_time'] for cls_name, stats in sorted(cls_stats.items())
+]
 cls_runtime.append(parsing_time)
 cls_names.append('Read/Parse\n+Feat.Extr.')
 cls_runtime.append(vectorizing_time)

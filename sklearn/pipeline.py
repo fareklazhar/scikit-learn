@@ -89,24 +89,27 @@ class Pipeline(BaseEstimator):
     def __init__(self, steps):
         names, estimators = zip(*steps)
         if len(dict(steps)) != len(steps):
-            raise ValueError("Provided step names are not unique: %s" % (names,))
+            raise ValueError(f"Provided step names are not unique: {names}")
 
         # shallow copy of steps
         self.steps = tosequence(steps)
-        transforms = estimators[:-1]
         estimator = estimators[-1]
 
+        transforms = estimators[:-1]
         for t in transforms:
-            if (not (hasattr(t, "fit") or hasattr(t, "fit_transform")) or not
-                    hasattr(t, "transform")):
-                raise TypeError("All intermediate steps of the chain should "
-                                "be transforms and implement fit and transform"
-                                " '%s' (type %s) doesn't)" % (t, type(t)))
+            if (
+                not hasattr(t, "fit")
+                and not hasattr(t, "fit_transform")
+                or not hasattr(t, "transform")
+            ):
+                raise TypeError(
+                    f"All intermediate steps of the chain should be transforms and implement fit and transform '{t}' (type {type(t)}) doesn't)"
+                )
 
         if not hasattr(estimator, "fit"):
-            raise TypeError("Last step of chain should implement fit "
-                            "'%s' (type %s) doesn't)"
-                            % (estimator, type(estimator)))
+            raise TypeError(
+                f"Last step of chain should implement fit '{estimator}' (type {type(estimator)}) doesn't)"
+            )
 
     @property
     def _estimator_type(self):
@@ -115,14 +118,13 @@ class Pipeline(BaseEstimator):
     def get_params(self, deep=True):
         if not deep:
             return super(Pipeline, self).get_params(deep=False)
-        else:
-            out = self.named_steps
-            for name, step in six.iteritems(self.named_steps):
-                for key, value in six.iteritems(step.get_params(deep=True)):
-                    out['%s__%s' % (name, key)] = value
+        out = self.named_steps
+        for name, step in six.iteritems(self.named_steps):
+            for key, value in six.iteritems(step.get_params(deep=True)):
+                out[f'{name}__{key}'] = value
 
-            out.update(super(Pipeline, self).get_params(deep=False))
-            return out
+        out.update(super(Pipeline, self).get_params(deep=False))
+        return out
 
     @property
     def named_steps(self):
@@ -135,7 +137,7 @@ class Pipeline(BaseEstimator):
     # Estimator interface
 
     def _pre_transform(self, X, y=None, **fit_params):
-        fit_params_steps = dict((step, {}) for step, _ in self.steps)
+        fit_params_steps = {step: {} for step, _ in self.steps}
         for pname, pval in six.iteritems(fit_params):
             step, param = pname.split('__', 1)
             fit_params_steps[step][param] = pval
@@ -145,7 +147,7 @@ class Pipeline(BaseEstimator):
                 Xt = transform.fit_transform(Xt, y, **fit_params_steps[name])
             else:
                 Xt = transform.fit(Xt, y, **fit_params_steps[name]) \
-                              .transform(Xt)
+                                  .transform(Xt)
         return Xt, fit_params_steps[self.steps[-1][0]]
 
     def fit(self, X, y=None, **fit_params):
@@ -405,16 +407,15 @@ def _fit_transform_one(transformer, name, X, y, transformer_weights,
         # if we have a weight for this transformer, multiply output
         if hasattr(transformer, 'fit_transform'):
             X_transformed = transformer.fit_transform(X, y, **fit_params)
-            return X_transformed * transformer_weights[name], transformer
         else:
             X_transformed = transformer.fit(X, y, **fit_params).transform(X)
-            return X_transformed * transformer_weights[name], transformer
+        return X_transformed * transformer_weights[name], transformer
     if hasattr(transformer, 'fit_transform'):
         X_transformed = transformer.fit_transform(X, y, **fit_params)
-        return X_transformed, transformer
     else:
         X_transformed = transformer.fit(X, y, **fit_params).transform(X)
-        return X_transformed, transformer
+
+    return X_transformed, transformer
 
 
 class FeatureUnion(BaseEstimator, TransformerMixin):
@@ -458,8 +459,9 @@ class FeatureUnion(BaseEstimator, TransformerMixin):
             if not hasattr(trans, 'get_feature_names'):
                 raise AttributeError("Transformer %s does not provide"
                                      " get_feature_names." % str(name))
-            feature_names.extend([name + "__" + f for f in
-                                  trans.get_feature_names()])
+            feature_names.extend(
+                [f"{name}__{f}" for f in trans.get_feature_names()]
+            )
         return feature_names
 
     def fit(self, X, y=None):
@@ -530,13 +532,12 @@ class FeatureUnion(BaseEstimator, TransformerMixin):
     def get_params(self, deep=True):
         if not deep:
             return super(FeatureUnion, self).get_params(deep=False)
-        else:
-            out = dict(self.transformer_list)
-            for name, trans in self.transformer_list:
-                for key, value in iteritems(trans.get_params(deep=True)):
-                    out['%s__%s' % (name, key)] = value
-            out.update(super(FeatureUnion, self).get_params(deep=False))
-            return out
+        out = dict(self.transformer_list)
+        for name, trans in self.transformer_list:
+            for key, value in iteritems(trans.get_params(deep=True)):
+                out[f'{name}__{key}'] = value
+        out |= super(FeatureUnion, self).get_params(deep=False)
+        return out
 
     def _update_transformer_list(self, transformers):
         self.transformer_list[:] = [

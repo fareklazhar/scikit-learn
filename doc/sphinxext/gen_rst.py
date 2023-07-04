@@ -153,7 +153,7 @@ def parse_sphinx_searchindex(searchindex):
 
     def _parse_dict_recursive(dict_str):
         """Parse a dictionary from the search index"""
-        dict_out = dict()
+        dict_out = {}
         pos_last = 0
         pos = dict_str.find(':')
         while pos >= 0:
@@ -243,7 +243,7 @@ class SphinxDocLinkResolver(object):
             if relative:
                 raise ValueError('Relative links are only supported for local '
                                  'URLs (doc_url cannot start with "http://)"')
-            searchindex_url = doc_url + '/' + searchindex
+            searchindex_url = f'{doc_url}/{searchindex}'
         else:
             searchindex_url = os.path.join(doc_url, searchindex)
 
@@ -298,8 +298,7 @@ class SphinxDocLinkResolver(object):
             # test if cobj appears in page
             comb_names = [cobj['module_short'] + '.' + cobj['name']]
             if self.extra_modules_test is not None:
-                for mod in self.extra_modules_test:
-                    comb_names.append(mod + '.' + cobj['name'])
+                comb_names.extend(f'{mod}.' + cobj['name'] for mod in self.extra_modules_test)
             url = False
             if hasattr(html, 'decode'):
                 # Decode bytes under Python 3
@@ -310,7 +309,7 @@ class SphinxDocLinkResolver(object):
                     # Decode bytes under Python 3
                     comb_name = comb_name.decode('utf-8', 'replace')
                 if comb_name in html:
-                    url = link + u'#' + comb_name
+                    url = f'{link}#{comb_name}'
             link = url
         else:
             link = False
@@ -445,22 +444,16 @@ def extract_docstring(filename, ignore_heading=False):
             continue
         elif tok_type == 'STRING':
             docstring = eval(tok_content)
-            # If the docstring is formatted with several paragraphs, extract
-            # the first one:
-            paragraphs = '\n'.join(
-                line.rstrip() for line
-                in docstring.split('\n')).split('\n\n')
-            if paragraphs:
+            if paragraphs := '\n'.join(
+                line.rstrip() for line in docstring.split('\n')
+            ).split('\n\n'):
                 if ignore_heading:
-                    if len(paragraphs) > 1:
-                        first_par = re.sub('\n', ' ', paragraphs[1])
-                        first_par = ((first_par[:95] + '...')
-                                     if len(first_par) > 95 else first_par)
-                    else:
-                        raise ValueError("Docstring not found by gallery.\n"
-                                         "Please check the layout of your"
-                                         " example file:\n {}\n and make sure"
-                                         " it's correct".format(filename))
+                    if len(paragraphs) <= 1:
+                        raise ValueError(
+                            f"Docstring not found by gallery.\nPlease check the layout of your example file:\n {filename}\n and make sure it's correct"
+                        )
+                    first_par = re.sub('\n', ' ', paragraphs[1])
+                    first_par = f'{first_par[:95]}...' if len(first_par) > 95 else first_par
                 else:
                     first_par = paragraphs[0]
 
@@ -559,29 +552,31 @@ def line_count_sort(file_list, target_dir):
         unsorted[count][0] = exmpl
     index = np.lexsort((unsorted[:, 0].astype(np.str),
                         unsorted[:, 1].astype(np.float)))
-    if not len(unsorted):
-        return []
-    return np.array(unsorted[index][:, 0]).tolist()
+    return [] if not len(unsorted) else np.array(unsorted[index][:, 0]).tolist()
 
 
 def _thumbnail_div(subdir, full_dir, fname, snippet, is_backref=False):
     """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb', fname[:-3] + '.png')
+    thumb = os.path.join(full_dir, 'images', 'thumb', f'{fname[:-3]}.png')
     link_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
     ref_name = os.path.join(subdir, fname).replace(os.path.sep, '_')
     if ref_name.startswith('._'):
         ref_name = ref_name[2:]
-    out = []
-    out.append("""
+    out = [
+        (
+            """
 
 .. raw:: html
 
     <div class="thumbnailContainer" tooltip="{}">
 
-""".format(snippet))
-
-    out.append('.. only:: html\n\n')
-    out.append('  .. figure:: %s\n' % thumb)
+""".format(
+                snippet
+            )
+        ),
+        '.. only:: html\n\n',
+        '  .. figure:: %s\n' % thumb,
+    ]
     if link_name.startswith('._'):
         link_name = link_name[2:]
     if full_dir != '.':
@@ -604,15 +599,14 @@ def _thumbnail_div(subdir, full_dir, fname, snippet, is_backref=False):
 def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
-    if not directory == '.':
+    if directory != '.':
         target_dir = os.path.join(root_dir, directory)
         src_dir = os.path.join(example_dir, directory)
     else:
         target_dir = root_dir
         src_dir = example_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        raise ValueError('Example directory %s does not have a README.txt' %
-                         src_dir)
+        raise ValueError(f'Example directory {src_dir} does not have a README.txt')
 
     fhindex.write("""
 
@@ -642,15 +636,16 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(root_dir, '../modules/generated/%s.examples' % backref)
+                include_path = os.path.join(
+                    root_dir, f'../modules/generated/{backref}.examples'
+                )
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
                         # heading
                         print(file=ex_file)
-                        print('Examples using ``%s``' % backref, file=ex_file)
-                        print('-----------------%s--' % ('-' * len(backref)),
-                              file=ex_file)
+                        print(f'Examples using ``{backref}``', file=ex_file)
+                        print(f"-----------------{'-' * len(backref)}--", file=ex_file)
                         print(file=ex_file)
                     rel_dir = os.path.join('../../auto_examples', directory)
                     ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet, is_backref=True))
@@ -679,11 +674,7 @@ def make_thumbnail(in_fname, out_fname, width, height):
     scale_w = width / float(width_in)
     scale_h = height / float(height_in)
 
-    if height_in * scale_w <= height:
-        scale = scale_w
-    else:
-        scale = scale_h
-
+    scale = scale_w if height_in * scale_w <= height else scale_h
     width_sc = int(round(scale * width_in))
     height_sc = int(round(scale * height_in))
 
@@ -712,7 +703,7 @@ def get_short_module_name(module_name, obj_name):
     for i in range(len(parts) - 1, 0, -1):
         short_name = '.'.join(parts[:i])
         try:
-            exec('from %s import %s' % (short_name, obj_name))
+            exec(f'from {short_name} import {obj_name}')
         except ImportError:
             # get the last working module name
             short_name = '.'.join(parts[:(i + 1)])
@@ -737,7 +728,7 @@ class NameFinder(ast.NodeVisitor):
             self.imported_names[local_name] = prefix + alias.name
 
     def visit_ImportFrom(self, node):
-        self.visit_Import(node, node.module + '.')
+        self.visit_Import(node, f'{node.module}.')
 
     def visit_Name(self, node):
         self.accessed_names.add(node.id)
@@ -759,8 +750,8 @@ class NameFinder(ast.NodeVisitor):
     def get_mapping(self):
         for name in self.accessed_names:
             local_name = name.split('.', 1)[0]
-            remainder = name[len(local_name):]
             if local_name in self.imported_names:
+                remainder = name[len(local_name):]
                 # Join import path to relative path
                 full_name = self.imported_names[local_name] + remainder
                 yield name, full_name
@@ -807,7 +798,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     this_template = rst_template
     last_dir = os.path.split(src_dir)[-1]
     # to avoid leading . in file names, and wrong names in links
-    if last_dir == '.' or last_dir == 'examples':
+    if last_dir in ['.', 'examples']:
         last_dir = ''
     else:
         last_dir += '_'
@@ -826,28 +817,23 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
     image_path = os.path.join(image_dir, image_fname)
-    stdout_path = os.path.join(image_dir,
-                               'stdout_%s.txt' % base_image_name)
-    time_path = os.path.join(image_dir,
-                             'time_%s.txt' % base_image_name)
-    thumb_file = os.path.join(thumb_dir, base_image_name + '.png')
+    stdout_path = os.path.join(image_dir, f'stdout_{base_image_name}.txt')
+    time_path = os.path.join(image_dir, f'time_{base_image_name}.txt')
+    thumb_file = os.path.join(thumb_dir, f'{base_image_name}.png')
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.
         first_image_file = image_path % 1
-        if os.path.exists(stdout_path):
-            stdout = open(stdout_path).read()
-        else:
-            stdout = ''
+        stdout = open(stdout_path).read() if os.path.exists(stdout_path) else ''
         if os.path.exists(time_path):
             time_elapsed = float(open(time_path).read())
 
         if not os.path.exists(first_image_file) or \
            os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
             # We need to execute the code
-            print('plotting %s' % fname)
+            print(f'plotting {fname}')
             t0 = time()
             import matplotlib.pyplot as plt
             plt.close('all')
@@ -872,8 +858,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     my_stdout = my_stdout.replace(
                         my_globals['__doc__'],
                         '')
-                my_stdout = my_stdout.strip().expandtabs()
-                if my_stdout:
+                if my_stdout := my_stdout.strip().expandtabs():
                     stdout = '**Script output**::\n\n  %s\n\n' % (
                         '\n  '.join(my_stdout.split('\n')))
                 open(stdout_path, 'w').write(stdout)
@@ -894,8 +879,8 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     kwargs = {}
                     to_rgba = matplotlib.colors.colorConverter.to_rgba
                     for attr in ['facecolor', 'edgecolor']:
-                        fig_attr = getattr(fig, 'get_' + attr)()
-                        default_attr = matplotlib.rcParams['figure.' + attr]
+                        fig_attr = getattr(fig, f'get_{attr}')()
+                        default_attr = matplotlib.rcParams[f'figure.{attr}']
                         if to_rgba(fig_attr) != to_rgba(default_attr):
                             kwargs[attr] = fig_attr
 
@@ -903,7 +888,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                     figure_list.append(image_fname % fig_mngr.num)
             except:
                 print(80 * '_')
-                print('%s is not compiling:' % fname)
+                print(f'{fname} is not compiling:')
                 traceback.print_exc()
                 print(80 * '_')
             finally:
@@ -935,7 +920,9 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
             os.makedirs(car_thumb_path)
         if os.path.exists(first_image_file):
             # We generate extra special thumbnails for the carousel
-            carousel_tfile = os.path.join(car_thumb_path, base_image_name + '_carousel.png')
+            carousel_tfile = os.path.join(
+                car_thumb_path, f'{base_image_name}_carousel.png'
+            )
             first_img = image_fname % 1
             if first_img in carousel_thumbs:
                 make_thumbnail((image_path % carousel_thumbs[first_img][0]),
@@ -959,7 +946,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
+    f = open(os.path.join(target_dir, f'{base_image_name}.rst'), 'w')
     f.write(this_template % locals())
     f.flush()
 
@@ -970,14 +957,15 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
         example_code_obj = \
             identify_names(open(example_file, encoding='utf-8').read())
     if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
+        codeobj_fname = f'{example_file[:-3]}_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
 
-    backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in example_code_obj.values()
-                   if entry['module'].startswith('sklearn'))
-    return backrefs
+    return {
+        '{module_short}.{name}'.format(**entry)
+        for entry in example_code_obj.values()
+        if entry['module'].startswith('sklearn')
+    }
 
 
 def embed_code_links(app, exception):

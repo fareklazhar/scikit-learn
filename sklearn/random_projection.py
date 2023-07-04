@@ -187,10 +187,11 @@ def gaussian_random_matrix(n_components, n_features, random_state=None):
     """
     _check_input_size(n_components, n_features)
     rng = check_random_state(random_state)
-    components = rng.normal(loc=0.0,
-                            scale=1.0 / np.sqrt(n_components),
-                            size=(n_components, n_features))
-    return components
+    return rng.normal(
+        loc=0.0,
+        scale=1.0 / np.sqrt(n_components),
+        size=(n_components, n_features),
+    )
 
 
 def sparse_random_matrix(n_components, n_features, density='auto',
@@ -266,7 +267,7 @@ def sparse_random_matrix(n_components, n_features, density='auto',
         indices = []
         offset = 0
         indptr = [offset]
-        for i in xrange(n_components):
+        for _ in xrange(n_components):
             # find the indices of the non-zero components for row i
             n_nonzero_i = rng.binomial(n_features, density)
             indices_i = sample_without_replacement(n_features, n_nonzero_i,
@@ -364,8 +365,9 @@ class BaseRandomProjection(six.with_metaclass(ABCMeta, BaseEstimator,
                                        n_features))
         else:
             if self.n_components <= 0:
-                raise ValueError("n_components must be greater than 0, got %s"
-                                 % self.n_components_)
+                raise ValueError(
+                    f"n_components must be greater than 0, got {self.n_components_}"
+                )
 
             elif self.n_components > n_features:
                 warnings.warn(
@@ -413,13 +415,12 @@ class BaseRandomProjection(six.with_metaclass(ABCMeta, BaseEstimator,
 
         if X.shape[1] != self.components_.shape[1]:
             raise ValueError(
-                'Impossible to perform projection:'
-                'X at fit stage had a different number of features. '
-                '(%s != %s)' % (X.shape[1], self.components_.shape[1]))
+                f'Impossible to perform projection:X at fit stage had a different number of features. ({X.shape[1]} != {self.components_.shape[1]})'
+            )
 
-        X_new = safe_sparse_dot(X, self.components_.T,
-                                dense_output=self.dense_output)
-        return X_new
+        return safe_sparse_dot(
+            X, self.components_.T, dense_output=self.dense_output
+        )
 
 
 class GaussianRandomProjection(BaseRandomProjection):

@@ -49,9 +49,9 @@ for lang, page in pages.items():
         os.makedirs(short_text_lang_folder)
 
     opener = build_opener()
-    html_filename = os.path.join(html_folder, lang + '.html')
+    html_filename = os.path.join(html_folder, f'{lang}.html')
     if not os.path.exists(html_filename):
-        print("Downloading %s" % page)
+        print(f"Downloading {page}")
         request = Request(page)
         # change the User Agent to avoid being blocked by Wikipedia
         # downloading a couple of articles ones should not be abusive
@@ -76,7 +76,7 @@ for lang, page in pages.items():
 
         text_filename = os.path.join(text_lang_folder,
                                      '%s_%04d.txt' % (lang, i))
-        print("Writing %s" % text_filename)
+        print(f"Writing {text_filename}")
         open(text_filename, 'wb').write(content.encode('utf-8', 'ignore'))
         i += 1
 
@@ -96,7 +96,7 @@ for lang, page in pages.items():
 
             short_text_filename = os.path.join(short_text_lang_folder,
                                                '%s_%04d.txt' % (lang, j))
-            print("Writing %s" % short_text_filename)
+            print(f"Writing {short_text_filename}")
             open(short_text_filename, 'wb').write(
                 small_content.encode('utf-8', 'ignore'))
             j += 1

@@ -31,6 +31,7 @@ solution. Note that the degree of sparsity and thus the prediction time depends
 on the parameters epsilon and C of the SVR.
 """
 
+
 # Authors: Jan Hendrik Metzen <jhm@informatik.uni-bremen.de>
 # License: BSD 3 clause
 
@@ -135,10 +136,20 @@ for name, estimator in {"KRR": KernelRidge(kernel='rbf', alpha=0.1,
         estimator.predict(X_plot[:1000])
         test_time.append(time.time() - t0)
 
-    plt.plot(sizes, train_time, 'o-', color="r" if name == "SVR" else "g",
-             label="%s (train)" % name)
-    plt.plot(sizes, test_time, 'o--', color="r" if name == "SVR" else "g",
-             label="%s (test)" % name)
+    plt.plot(
+        sizes,
+        train_time,
+        'o-',
+        color="r" if name == "SVR" else "g",
+        label=f"{name} (train)",
+    )
+    plt.plot(
+        sizes,
+        test_time,
+        'o--',
+        color="r" if name == "SVR" else "g",
+        label=f"{name} (test)",
+    )
 
 plt.xscale("log")
 plt.yscale("log")

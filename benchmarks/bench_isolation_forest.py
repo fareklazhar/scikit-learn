@@ -6,6 +6,7 @@ IsolationForest benchmark
 A test of IsolationForest on classical anomaly detection datasets.
 
 """
+
 print(__doc__)
 
 from time import time
@@ -73,7 +74,7 @@ for dat in datasets:
         X = np.c_[X[:, :1], x1, x2, x3, X[:, 4:]]
         y = (y != 'normal.').astype(int)
 
-    if dat == 'http' or dat == 'smtp':
+    if dat in ['http', 'smtp']:
         y = (y != 'normal.').astype(int)
 
     n_samples, n_features = np.shape(X)

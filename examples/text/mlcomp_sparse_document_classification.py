@@ -122,7 +122,7 @@ def benchmark(clf_class, params, name):
 
     # Show confusion matrix
     pl.matshow(cm)
-    pl.title('Confusion matrix of the %s classifier' % name)
+    pl.title(f'Confusion matrix of the {name} classifier')
     pl.colorbar()
 
 

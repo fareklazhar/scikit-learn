@@ -48,6 +48,7 @@ set by internal cross-validation in the GraphLassoCV. As can be
 seen on figure 2, the grid to compute the cross-validation score is
 iteratively refined in the neighborhood of the maximum.
 """
+
 print(__doc__)
 # author: Gael Varoquaux <gael.varoquaux@inria.fr>
 # License: BSD 3 clause
@@ -106,7 +107,7 @@ for i, (name, this_cov) in enumerate(covs):
                cmap=plt.cm.RdBu_r)
     plt.xticks(())
     plt.yticks(())
-    plt.title('%s covariance' % name)
+    plt.title(f'{name} covariance')
 
 
 # plot the precisions
@@ -120,7 +121,7 @@ for i, (name, this_prec) in enumerate(precs):
                cmap=plt.cm.RdBu_r)
     plt.xticks(())
     plt.yticks(())
-    plt.title('%s precision' % name)
+    plt.title(f'{name} precision')
     ax.set_axis_bgcolor('.7')
 
 # plot the model selection metric

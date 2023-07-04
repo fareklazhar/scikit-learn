@@ -123,10 +123,13 @@ def _plot(results, metrics, formats, title, x_ticks, x_label,
     ax = fig.add_subplot(111)
     for i, metric in enumerate(metrics):
         for j, format in enumerate(formats):
-            ax.plot(x_ticks, results[i, j].flat,
-                    label='{}, {}'.format(metric, format),
-                    marker=format_markers[j],
-                    color=metric_colors[i % len(metric_colors)])
+            ax.plot(
+                x_ticks,
+                results[i, j].flat,
+                label=f'{metric}, {format}',
+                marker=format_markers[j],
+                color=metric_colors[i % len(metric_colors)],
+            )
     ax.set_xlabel(x_label)
     ax.set_ylabel('Time (s)')
     ax.legend()
@@ -135,9 +138,12 @@ def _plot(results, metrics, formats, title, x_ticks, x_label,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument('metrics', nargs='*', default=sorted(METRICS),
-                    help='Specifies metrics to benchmark, defaults to all. '
-                         'Choices are: {}'.format(sorted(METRICS)))
+    ap.add_argument(
+        'metrics',
+        nargs='*',
+        default=sorted(METRICS),
+        help=f'Specifies metrics to benchmark, defaults to all. Choices are: {sorted(METRICS)}',
+    )
     ap.add_argument('--formats', nargs='+', choices=sorted(FORMATS),
                     help='Specifies multilabel formats to benchmark '
                          '(defaults to all).')
@@ -160,10 +166,7 @@ if __name__ == "__main__":
 
     if args.plot is not None:
         max_val = getattr(args, args.plot)
-        if args.plot in ('classes', 'samples'):
-            min_val = 2
-        else:
-            min_val = 0
+        min_val = 2 if args.plot in ('classes', 'samples') else 0
         steps = np.linspace(min_val, max_val, num=args.n_steps + 1)[1:]
         if args.plot in ('classes', 'samples'):
             steps = np.unique(np.round(steps).astype(int))

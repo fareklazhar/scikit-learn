@@ -74,7 +74,7 @@ if __name__ == '__main__':
     n_classes = 10
     for i in range(n):
         print('============================================')
-        print('Entering iteration %s of %s' % (i, n))
+        print(f'Entering iteration {i} of {n}')
         print('============================================')
         n_samples += step
         X = np.random.randn(n_samples, dim)
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     dim = start_dim
     for i in range(0, n):
         print('============================================')
-        print('Entering iteration %s of %s' % (i, n))
+        print(f'Entering iteration {i} of {n}')
         print('============================================')
         dim += step
         X = np.random.randn(100, dim)

@@ -49,20 +49,20 @@ def mangle_docstrings(app, what, name, obj, options, lines,
     if app.config.numpydoc_edit_link and hasattr(obj, '__name__') and \
            obj.__name__:
         if hasattr(obj, '__module__'):
-            v = dict(full_name="%s.%s" % (obj.__module__, obj.__name__))
+            v = dict(full_name=f"{obj.__module__}.{obj.__name__}")
         else:
             v = dict(full_name=obj.__name__)
         lines += [u'', u'.. htmlonly::', '']
-        lines += [u'    %s' % x for x in
-                  (app.config.numpydoc_edit_link % v).split("\n")]
+        lines += [
+            f'    {x}' for x in (app.config.numpydoc_edit_link % v).split("\n")
+        ]
 
     # replace reference numbers so that there are no duplicates
     references = []
     for line in lines:
         line = line.strip()
-        m = re.match(r'^.. \[([a-z0-9_.-])\]', line, re.I)
-        if m:
-            references.append(m.group(1))
+        if m := re.match(r'^.. \[([a-z0-9_.-])\]', line, re.I):
+            references.append(m[1])
 
     # start renaming from the longest string, to avoid overwriting parts
     references.sort(key=lambda x: -len(x))
@@ -73,10 +73,8 @@ def mangle_docstrings(app, what, name, obj, options, lines,
                     new_r = "R%d" % (reference_offset[0] + int(r))
                 else:
                     new_r = u"%s%d" % (r, reference_offset[0])
-                lines[i] = lines[i].replace(u'[%s]_' % r,
-                                            u'[%s]_' % new_r)
-                lines[i] = lines[i].replace(u'.. [%s]' % r,
-                                            u'.. [%s]' % new_r)
+                lines[i] = lines[i].replace(f'[{r}]_', f'[{new_r}]_')
+                lines[i] = lines[i].replace(f'.. [{r}]', f'.. [{new_r}]')
 
     reference_offset[0] += len(references)
 
@@ -169,6 +167,9 @@ class NumpyCDomain(ManglingDomainBase, CDomain):
 
 
 def wrap_mangling_directive(base_directive, objtype):
+
+
+
     class directive(base_directive):
         def run(self):
             env = self.state.document.settings.env
@@ -176,7 +177,7 @@ def wrap_mangling_directive(base_directive, objtype):
             name = None
             if self.arguments:
                 m = re.match(r'^(.*\s+)?(.*?)(\(.*)?', self.arguments[0])
-                name = m.group(2).strip()
+                name = m[2].strip()
 
             if not name:
                 name = self.arguments[0]
@@ -188,5 +189,6 @@ def wrap_mangling_directive(base_directive, objtype):
             self.content = ViewList(lines, self.content.parent)
 
             return base_directive.run(self)
+
 
     return directive

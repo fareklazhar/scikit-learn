@@ -27,6 +27,7 @@ size. The speed of the decrease depends mostly on the LSHForest parameters and
 the dimensionality of the data.
 
 """
+
 from __future__ import division
 print(__doc__)
 
@@ -87,7 +88,7 @@ for n_samples in n_samples_values:
     time_exact = []
     accuracy = []
 
-    for i in range(n_iter):
+    for _ in range(n_iter):
         # pick one query at random to study query time variability in LSHForest
         query = queries[[rng.randint(0, n_queries)]]
 

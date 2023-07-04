@@ -6,6 +6,7 @@ SVM-Anova: SVM with univariate feature selection
 This example shows how to perform univariate feature selection before running a
 SVC (support vector classifier) to improve the classification scores.
 """
+
 print(__doc__)
 
 import numpy as np
@@ -36,8 +37,8 @@ clf = Pipeline([('anova', transform), ('svc', svm.SVC(C=1.0))])
 
 ###############################################################################
 # Plot the cross-validation score as a function of percentile of features
-score_means = list()
-score_stds = list()
+score_means = []
+score_stds = []
 percentiles = (1, 3, 6, 10, 15, 20, 30, 40, 60, 80, 100)
 
 for percentile in percentiles:

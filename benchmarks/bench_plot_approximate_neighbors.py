@@ -67,16 +67,15 @@ def calc_accuracy(X, queries, n_queries, n_neighbors, exact_neighbors,
     lshf_build_time = time() - t0
     print('Done in %0.3fs' % lshf_build_time)
 
-    accuracy = 0
-
     t0 = time()
     approx_neighbors = lshf.kneighbors(queries, n_neighbors=n_neighbors,
                                        return_distance=False)
     average_time_approx = (time() - t0) / n_queries
 
-    for i in range(len(queries)):
-        accuracy += np.in1d(approx_neighbors[i], exact_neighbors[i]).mean()
-
+    accuracy = sum(
+        np.in1d(approx_neighbors[i], exact_neighbors[i]).mean()
+        for i in range(len(queries))
+    )
     accuracy /= n_queries
     speed_up = average_time_exact / average_time_approx
 

@@ -103,15 +103,13 @@ class ParameterGrid(object):
             allowed values.
         """
         for p in self.param_grid:
-            # Always sort the keys of a dictionary, for reproducibility
-            items = sorted(p.items())
-            if not items:
-                yield {}
-            else:
+            if items := sorted(p.items()):
                 keys, values = zip(*items)
                 for v in product(*values):
-                    params = dict(zip(keys, v))
-                    yield params
+                    yield dict(zip(keys, v))
+
+            else:
+                yield {}
 
     def __len__(self):
         """Number of points on the grid."""
@@ -136,13 +134,11 @@ class ParameterGrid(object):
         # This is used to make discrete sampling without replacement memory
         # efficient.
         for sub_grid in self.param_grid:
-            # XXX: could memoize information used here
             if not sub_grid:
                 if ind == 0:
                     return {}
-                else:
-                    ind -= 1
-                    continue
+                ind -= 1
+                continue
 
             # Reverse so most frequent cycling parameter comes first
             keys, values_lists = zip(*sorted(sub_grid.items())[::-1])
@@ -248,13 +244,10 @@ class ParameterSampler(object):
             # Always sort the keys of a dictionary, for reproducibility
             items = sorted(self.param_distributions.items())
             for _ in six.moves.range(self.n_iter):
-                params = dict()
-                for k, v in items:
-                    if hasattr(v, "rvs"):
-                        params[k] = v.rvs()
-                    else:
-                        params[k] = v[rnd.randint(len(v))]
-                yield params
+                yield {
+                    k: v.rvs() if hasattr(v, "rvs") else v[rnd.randint(len(v))]
+                    for k, v in items
+                }
 
     def __len__(self):
         """Number of points that will be sampled."""
@@ -564,14 +557,14 @@ class BaseSearchCV(six.with_metaclass(ABCMeta, BaseEstimator,
         n_fits = len(out)
         n_folds = len(cv)
 
-        scores = list()
-        grid_scores = list()
+        scores = []
+        grid_scores = []
         for grid_start in range(0, n_fits, n_folds):
             n_test_samples = 0
             score = 0
             all_scores = []
             for this_score, this_n_test_samples, _, parameters in \
-                    out[grid_start:grid_start + n_folds]:
+                        out[grid_start:grid_start + n_folds]:
                 all_scores.append(this_score)
                 if self.iid:
                     this_score *= this_n_test_samples

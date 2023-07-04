@@ -637,11 +637,7 @@ class LeaveOneLabelOut(_PartitionIterator):
             yield self.labels == i
 
     def __repr__(self):
-        return '%s.%s(labels=%s)' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.labels,
-        )
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(labels={self.labels})'
 
     def __len__(self):
         return self.n_unique_labels
@@ -722,12 +718,7 @@ class LeavePLabelOut(_PartitionIterator):
             yield test_index
 
     def __repr__(self):
-        return '%s.%s(labels=%s, p=%s)' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.labels,
-            self.p,
-        )
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(labels={self.labels}, p={self.p})'
 
     def __len__(self):
         return int(factorial(self.n_unique_labels) /
@@ -749,8 +740,7 @@ class BaseShuffleSplit(with_metaclass(ABCMeta)):
                                                             train_size)
 
     def __iter__(self):
-        for train, test in self._iter_indices():
-            yield train, test
+        yield from self._iter_indices()
         return
 
     @abstractmethod
@@ -822,7 +812,7 @@ class ShuffleSplit(BaseShuffleSplit):
 
     def _iter_indices(self):
         rng = check_random_state(self.random_state)
-        for i in range(self.n_iter):
+        for _ in range(self.n_iter):
             # random partition
             permutation = rng.permutation(self.n)
             ind_test = permutation[:self.n_test]
@@ -888,11 +878,10 @@ def _validate_shuffle_split(n, test_size, train_size):
 
     if train_size is None:
         n_train = n - n_test
+    elif np.asarray(train_size).dtype.kind == 'f':
+        n_train = floor(train_size * n)
     else:
-        if np.asarray(train_size).dtype.kind == 'f':
-            n_train = floor(train_size * n)
-        else:
-            n_train = float(train_size)
+        n_train = float(train_size)
 
     if test_size is None:
         n_test = n - n_train
@@ -996,7 +985,7 @@ class StratifiedShuffleSplit(BaseShuffleSplit):
         t_i = np.minimum(cls_count - n_i,
                          np.round(self.n_test * p_i).astype(int))
 
-        for n in range(self.n_iter):
+        for _ in range(self.n_iter):
             train = []
             test = []
 
@@ -1084,10 +1073,7 @@ class PredefinedSplit(_PartitionIterator):
             yield np.where(self.test_fold == f)[0]
 
     def __repr__(self):
-        return '%s.%s(test_fold=%s)' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.test_fold)
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(test_fold={self.test_fold})'
 
     def __len__(self):
         return len(self.unique_folds)
@@ -1358,9 +1344,7 @@ def _check_is_partition(locs, n):
         return False
     hit = np.zeros(n, bool)
     hit[locs] = True
-    if not np.all(hit):
-        return False
-    return True
+    return bool(np.all(hit))
 
 
 def cross_val_score(estimator, X, y=None, scoring=None, cv=None, n_jobs=1,
@@ -1515,12 +1499,12 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
         The parameters that have been evaluated.
     """
     if verbose > 1:
-        if parameters is None:
-            msg = "no parameters to be set"
-        else:
-            msg = '%s' % (', '.join('%s=%s' % (k, v)
-                          for k, v in parameters.items()))
-        print("[CV] %s %s" % (msg, (64 - len(msg)) * '.'))
+        msg = (
+            "no parameters to be set"
+            if parameters is None
+            else f"{', '.join(f'{k}={v}' for k, v in parameters.items())}"
+        )
+        print(f"[CV] {msg} {(64 - len(msg)) * '.'}")
 
     # Adjust length of sample weights
     fit_params = fit_params if fit_params is not None else {}
@@ -1567,8 +1551,8 @@ def _fit_and_score(estimator, X, y, scorer, train, test, verbose,
     if verbose > 2:
         msg += ", score=%f" % test_score
     if verbose > 1:
-        end_msg = "%s -%s" % (msg, logger.short_format_time(scoring_time))
-        print("[CV] %s %s" % ((64 - len(end_msg)) * '.', end_msg))
+        end_msg = f"{msg} -{logger.short_format_time(scoring_time)}"
+        print(f"[CV] {(64 - len(end_msg)) * '.'} {end_msg}")
 
     ret = [train_score] if return_train_score else []
     ret.extend([test_score, _num_samples(X_test), scoring_time])
@@ -1590,23 +1574,20 @@ def _safe_split(estimator, X, y, indices, train_indices=None):
             raise ValueError("Precomputed kernels or affinity matrices have "
                              "to be passed as arrays or sparse matrices.")
         X_subset = [X[idx] for idx in indices]
-    else:
-        if getattr(estimator, "_pairwise", False):
+    elif getattr(estimator, "_pairwise", False):
             # X is a precomputed square kernel matrix
-            if X.shape[0] != X.shape[1]:
-                raise ValueError("X should be a square kernel matrix")
-            if train_indices is None:
-                X_subset = X[np.ix_(indices, indices)]
-            else:
-                X_subset = X[np.ix_(indices, train_indices)]
+        if X.shape[0] == X.shape[1]:
+            X_subset = (
+                X[np.ix_(indices, indices)]
+                if train_indices is None
+                else X[np.ix_(indices, train_indices)]
+            )
         else:
-            X_subset = safe_indexing(X, indices)
-
-    if y is not None:
-        y_subset = safe_indexing(y, indices)
+            raise ValueError("X should be a square kernel matrix")
     else:
-        y_subset = None
+        X_subset = safe_indexing(X, indices)
 
+    y_subset = safe_indexing(y, indices) if y is not None else None
     return X_subset, y_subset
 
 
@@ -1617,8 +1598,9 @@ def _score(estimator, X_test, y_test, scorer):
     else:
         score = scorer(estimator, X_test, y_test)
     if not isinstance(score, numbers.Number):
-        raise ValueError("scoring must return a number, got %s (%s) instead."
-                         % (str(score), type(score)))
+        raise ValueError(
+            f"scoring must return a number, got {str(score)} ({type(score)}) instead."
+        )
     return score
 
 
@@ -1690,10 +1672,7 @@ def check_cv(cv, X=None, y=None, classifier=False):
             else:
                 cv = KFold(_num_samples(y), cv)
         else:
-            if not is_sparse:
-                n_samples = len(X)
-            else:
-                n_samples = X.shape[0]
+            n_samples = len(X) if not is_sparse else X.shape[0]
             cv = KFold(n_samples, cv)
     return cv
 
@@ -1893,7 +1872,7 @@ def train_test_split(*arrays, **options):
     stratify = options.pop('stratify', None)
 
     if options:
-        raise TypeError("Invalid parameters passed: %s" % str(options))
+        raise TypeError(f"Invalid parameters passed: {options}")
 
     if test_size is None and train_size is None:
         test_size = 0.25

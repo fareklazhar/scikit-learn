@@ -62,10 +62,7 @@ def _bistochastic_normalize(X, max_iter=1000, tol=1e-5):
     dist = None
     for _ in range(max_iter):
         X_new, _, _ = _scale_normalize(X_scaled)
-        if issparse(X):
-            dist = norm(X_scaled.data - X.data)
-        else:
-            dist = norm(X_scaled - X_new)
+        dist = norm(X_scaled.data - X.data) if issparse(X) else norm(X_scaled - X_new)
         X_scaled = X_new
         if dist is not None and dist < tol:
             break
@@ -427,15 +424,17 @@ class SpectralBiclustering(BaseSpectral):
                                  " or an iterable with two integers:"
                                  " (n_row_clusters, n_column_clusters)")
         if self.n_components < 1:
-            raise ValueError("Parameter n_components must be greater than 0,"
-                             " but its value is {}".format(self.n_components))
+            raise ValueError(
+                f"Parameter n_components must be greater than 0, but its value is {self.n_components}"
+            )
         if self.n_best < 1:
-            raise ValueError("Parameter n_best must be greater than 0,"
-                             " but its value is {}".format(self.n_best))
+            raise ValueError(
+                f"Parameter n_best must be greater than 0, but its value is {self.n_best}"
+            )
         if self.n_best > self.n_components:
-            raise ValueError("n_best cannot be larger than"
-                             " n_components, but {} >  {}"
-                             "".format(self.n_best, self.n_components))
+            raise ValueError(
+                f"n_best cannot be larger than n_components, but {self.n_best} >  {self.n_components}"
+            )
 
     def _fit(self, X):
         n_sv = self.n_components

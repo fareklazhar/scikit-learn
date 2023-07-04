@@ -19,17 +19,16 @@ from sklearn.datasets.samples_generator import make_regression
 
 
 def compute_bench(alpha, n_samples, n_features, precompute):
-    lasso_results = []
     lars_lasso_results = []
 
     it = 0
 
+    lasso_results = []
     for ns in n_samples:
         for nf in n_features:
             it += 1
             print('==================')
-            print('Iteration %s of %s' % (it, max(len(n_samples),
-                                          len(n_features))))
+            print(f'Iteration {it} of {max(len(n_samples), len(n_features))}')
             print('==================')
             n_informative = nf // 10
             X, Y, coef_ = make_regression(n_samples=ns, n_features=nf,

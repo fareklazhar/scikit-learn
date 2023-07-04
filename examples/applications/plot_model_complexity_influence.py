@@ -76,7 +76,7 @@ def benchmark_influence(conf):
     for param_value in conf['changing_param_values']:
         conf['tuned_params'][conf['changing_param']] = param_value
         estimator = conf['estimator'](**conf['tuned_params'])
-        print("Benchmarking %s" % estimator)
+        print(f"Benchmarking {estimator}")
         estimator.fit(conf['data']['X_train'], conf['data']['y_train'])
         conf['postfit_hook'](estimator)
         complexity = conf['complexity_computer'](estimator)
@@ -103,7 +103,7 @@ def plot_influence(conf, mse_values, prediction_times, complexities):
     host = host_subplot(111, axes_class=Axes)
     plt.subplots_adjust(right=0.75)
     par1 = host.twinx()
-    host.set_xlabel('Model Complexity (%s)' % conf['complexity_label'])
+    host.set_xlabel(f"Model Complexity ({conf['complexity_label']})")
     y1_label = conf['prediction_performance_label']
     y2_label = "Time (s)"
     host.set_ylabel(y1_label)
@@ -114,7 +114,7 @@ def plot_influence(conf, mse_values, prediction_times, complexities):
     host.legend(loc='upper right')
     host.axis["left"].label.set_color(p1.get_color())
     par1.axis["right"].label.set_color(p2.get_color())
-    plt.title('Influence of Model Complexity - %s' % conf['estimator'].__name__)
+    plt.title(f"Influence of Model Complexity - {conf['estimator'].__name__}")
     plt.show()
 
 
